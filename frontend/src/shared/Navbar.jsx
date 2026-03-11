@@ -1,12 +1,20 @@
-import { useState, useEffect } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { useState } from "react";
+import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import { Link, useLocation } from "react-router-dom";
+
+const departments = [
+  { label: "Cardiology", link: "/departments/cardiology" },
+  { label: "Orthopedics", link: "/departments/orthopedics" },
+  { label: "Pediatrics", link: "/departments/pediatrics" },
+  { label: "General Surgery", link: "/departments/general-surgery" },
+  { label: "Neurology", link: "/departments/neurology" },
+];
 
 const menuitems = [
   { label: "Services", link: "/services" },
   { label: "Doctors", link: "/doctors" },
-  { label: "Departments", link: "/departments" },
+  { label: "Departments", link: "/departments", hasDropdown: true },
   { label: "Specialists", link: "/specialists" },
   { label: "About", link: "/about" },
   { label: "Contact", link: "/contact" },
@@ -14,11 +22,13 @@ const menuitems = [
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [departmentOpen, setDepartmentOpen] = useState(false);
   const location = useLocation();
   const activeTab = location.pathname;
 
   const closeMenus = () => {
     setMenuOpen(false);
+    setDepartmentOpen(false);
   };
 
   return (
@@ -60,26 +70,57 @@ const Navbar = () => {
                 onClick={closeMenus}
                 className={`font-medium pb-1 border-b-2 transition-colors ${
                   activeTab === "/"
-                    ? "text-secondary-color border-secondary-color"
-                    : "text-primary-color border-transparent"
+                    ? "text-primary-color border-primary-color"
+                    : "text-secondary-color border-transparent"
                 }`}
               >
                 Home
               </Link>
             </li>
-            {menuitems.map(({ label, link }) => (
-              <li key={label}>
-                <Link 
-                  to={link} 
-                  onClick={closeMenus}
-                  className={`font-medium pb-1 border-b-2 transition-colors ${
-                    activeTab === link
-                      ? "text-secondary-color border-secondary-color"
-                      : "text-primary-color border-transparent"
-                  }`}
-                >
-                  {label}
-                </Link>
+            {menuitems.map(({ label, link, hasDropdown }) => (
+              <li key={label} className="relative group">
+                {hasDropdown ? (
+                  <div>
+                    <button
+                      onClick={() => setDepartmentOpen(!departmentOpen)}
+                      className={`font-medium pb-1 border-b-2 transition-colors flex items-center gap-1 ${
+                        activeTab.startsWith("/departments")
+                          ? "text-primary-color border-primary-color"
+                          : "text-secondary-color border-transparent"
+                      }`}
+                    >
+                      {label}
+                      <FaChevronDown className="text-xs" />
+                    </button>
+                    <ul className={`lg:absolute lg:top-full lg:left-0 lg:bg-white lg:shadow-lg lg:rounded-md lg:mt-2 lg:min-w-[200px] lg:opacity-0 lg:invisible lg:group-hover:opacity-100 lg:group-hover:visible lg:transition-all max-lg:pl-4 max-lg:mt-2 ${
+                      departmentOpen ? "max-lg:block" : "max-lg:hidden"
+                    }`}>
+                      {departments.map((dept) => (
+                        <li key={dept.label}>
+                          <Link
+                            to={dept.link}
+                            onClick={closeMenus}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                          >
+                            {dept.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <Link 
+                    to={link} 
+                    onClick={closeMenus}
+                    className={`font-medium pb-1 border-b-2 transition-colors ${
+                      activeTab === link
+                        ? "text-primary-color border-primary-color"
+                        : "text-secondary-color border-transparent"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

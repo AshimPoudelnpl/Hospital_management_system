@@ -9,6 +9,7 @@ import Specialists from "./pages/Specialists";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import BookAppointment from "./pages/BookAppointment";
+import Footer from "./shared/Footer";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-appointment" element={<BookAppointment />} />
       </Routes>
+      <Footer />
     </div>
   );
 };
