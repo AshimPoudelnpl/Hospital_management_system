@@ -4,6 +4,8 @@ import { removeImage } from "../utils/removeImg.js";
 export const createDepartment = async (req, res, next) => {
   try {
     const { name, description, head_doctor, services } = req.body;
+    console.log(typeof req.body.services);
+    console.log(req.body.services);
     const image = req.file ? req.file.path : null;
     if (!name) return res.status(400).json({ message: "Name is required" });
     const [result] = await db.execute(
