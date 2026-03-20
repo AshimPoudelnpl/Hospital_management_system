@@ -56,59 +56,10 @@ const About = () => {
         </div>
 
         {/* Services Offered Section */}
-        <div className="bg-white p-8 rounded-lg shadow-lg mb-12">
-          <h2 className="text-3xl font-bold text-blue-900 mb-6 text-center">Services Offered</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="p-6 border-l-4 border-blue-600">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">Cardiology</h3>
-              <p className="text-gray-600">Comprehensive heart care and cardiac treatments</p>
-            </div>
-            <div className="p-6 border-l-4 border-green-600">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">Orthopedics</h3>
-              <p className="text-gray-600">Advanced bone and joint care solutions</p>
-            </div>
-            <div className="p-6 border-l-4 border-purple-600">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">Pediatrics</h3>
-              <p className="text-gray-600">Specialized care for children's health</p>
-            </div>
-            <div className="p-6 border-l-4 border-red-600">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">General Surgery</h3>
-              <p className="text-gray-600">Expert surgical procedures and care</p>
-            </div>
-            <div className="p-6 border-l-4 border-yellow-600">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">Emergency Services</h3>
-              <p className="text-gray-600">24/7 emergency medical assistance</p>
-            </div>
-            <div className="p-6 border-l-4 border-indigo-600">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">Laboratory</h3>
-              <p className="text-gray-600">Advanced diagnostic testing facilities</p>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Medical Experts Section */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <img src={doctorImg} alt="Medical Team" className="w-full h-64 object-cover" />
-            <div className="p-6">
-              <h3 className="text-2xl font-bold text-blue-900 mb-3">Medical Experts</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Our team of highly qualified and experienced medical professionals is dedicated to providing 
-                exceptional healthcare services. Each specialist brings years of expertise in their respective fields.
-              </p>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <img src={surgeonImg} alt="Surgical Team" className="w-full h-64 object-cover" />
-            <div className="p-6">
-              <h3 className="text-2xl font-bold text-blue-900 mb-3">Advanced Technology</h3>
-              <p className="text-gray-600 leading-relaxed">
-                We utilize cutting-edge medical technology and modern equipment to ensure accurate diagnosis 
-                and effective treatment for all our patients with the highest standards of care.
-              </p>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Why Choose Us */}
         <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-lg p-8 mb-12">

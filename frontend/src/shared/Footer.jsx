@@ -1,27 +1,75 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import React from "react";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Footer = () => {
   return (
     <footer className="bg-gray-900 px-4 sm:px-6 pt-12 pb-6">
       <div className="max-w-screen-xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        
         <div className="space-y-6">
-          <img src={logo} alt="Swastik Hospital" className="w-16 bg-white rounded-full p-2" />
+          <img
+            src={logo}
+            alt="Swastik Hospital"
+            className="w-16 bg-white rounded-full p-2"
+          />
           <h6 className="text-lg text-white font-bold">Swastik Hospital</h6>
-          <p className="text-sm text-gray-400">Quality healthcare services for your wellbeing. Experienced medical professionals dedicated to your health.</p>
+          <p className="text-sm text-gray-400">
+            Quality healthcare services for your wellbeing. Experienced medical
+            professionals dedicated to your health.
+          </p>
         </div>
 
         <div className="space-y-6">
           <h6 className="text-sm text-white font-medium">QUICK LINKS</h6>
           <ul className="space-y-3">
-            <li><Link to="/" className="text-[13px] text-gray-400 hover:text-white">Home</Link></li>
-            <li><Link to="/services" className="text-[13px] text-gray-400 hover:text-white">Services</Link></li>
-            <li><Link to="/doctors" className="text-[13px] text-gray-400 hover:text-white">Doctors</Link></li>
-            <li><Link to="/departments" className="text-[13px] text-gray-400 hover:text-white">Departments</Link></li>
-            <li><Link to="/specialists" className="text-[13px] text-gray-400 hover:text-white">Specialists</Link></li>
-            <li><Link to="/about" className="text-[13px] text-gray-400 hover:text-white">About Us</Link></li>
+            <li>
+              <Link
+                to="/"
+                className="text-[13px] text-gray-400 hover:text-white"
+              >
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/services"
+                className="text-[13px] text-gray-400 hover:text-white"
+              >
+                Services
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/doctors"
+                className="text-[13px] text-gray-400 hover:text-white"
+              >
+                Doctors
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/departments"
+                className="text-[13px] text-gray-400 hover:text-white"
+              >
+                Departments
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/specialists"
+                className="text-[13px] text-gray-400 hover:text-white"
+              >
+                Specialists
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/about"
+                className="text-[13px] text-gray-400 hover:text-white"
+              >
+                About Us
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -30,8 +78,12 @@ const Footer = () => {
           <ul className="space-y-3">
             <li className="text-[13px] text-gray-400">📍 Kathmandu, Nepal</li>
             <li className="text-[13px] text-gray-400">📞 +977-1-XXXXXXX</li>
-            <li className="text-[13px] text-gray-400">✉️ info@swastikhospital.com</li>
-            <li className="text-[13px] text-gray-400">🕒 24/7 Emergency Services</li>
+            <li className="text-[13px] text-gray-400">
+              ✉️ info@swastikhospital.com
+            </li>
+            <li className="text-[13px] text-gray-400">
+              🕒 24/7 Emergency Services
+            </li>
           </ul>
         </div>
 
@@ -40,15 +92,30 @@ const Footer = () => {
           <ul className="flex space-x-4">
             <li>
               <a href="javascript:void(0)">
-                <svg xmlns="http://www.w3.org/2000/svg" className="fill-blue-600 w-8 h-8" viewBox="0 0 49.652 49.652">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="fill-blue-600 w-8 h-8"
+                  viewBox="0 0 49.652 49.652"
+                >
                   <path d="M24.826 0C11.137 0 0 11.137 0 24.826c0 13.688 11.137 24.826 24.826 24.826 13.688 0 24.826-11.138 24.826-24.826C49.652 11.137 38.516 0 24.826 0zM31 25.7h-4.039v14.396h-5.985V25.7h-2.845v-5.088h2.845v-3.291c0-2.357 1.12-6.04 6.04-6.04l4.435.017v4.939h-3.219c-.524 0-1.269.262-1.269 1.386v2.99h4.56z" />
                 </svg>
               </a>
             </li>
             <li>
               <a href="javascript:void(0)">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 152 152">
-                  <linearGradient id="a" x1="22.26" x2="129.74" y1="22.26" y2="129.74" gradientUnits="userSpaceOnUse">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-8 h-8"
+                  viewBox="0 0 152 152"
+                >
+                  <linearGradient
+                    id="a"
+                    x1="22.26"
+                    x2="129.74"
+                    y1="22.26"
+                    y2="129.74"
+                    gradientUnits="userSpaceOnUse"
+                  >
                     <stop offset="0" stopColor="#fae100" />
                     <stop offset=".15" stopColor="#fcb720" />
                     <stop offset=".3" stopColor="#ff7950" />
@@ -67,17 +134,31 @@ const Footer = () => {
             </li>
             <li>
               <a href="javascript:void(0)">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 1227 1227">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-8 h-8"
+                  viewBox="0 0 1227 1227"
+                >
                   <path d="M613.5 0C274.685 0 0 274.685 0 613.5S274.685 1227 613.5 1227 1227 952.315 1227 613.5 952.315 0 613.5 0z" />
-                  <path fill="#fff" d="m680.617 557.98 262.632-305.288h-62.235L652.97 517.77 470.833 252.692H260.759l275.427 400.844-275.427 320.142h62.239l240.82-279.931 192.35 279.931h210.074L680.601 557.98zM345.423 299.545h95.595l440.024 629.411h-95.595z" />
+                  <path
+                    fill="#fff"
+                    d="m680.617 557.98 262.632-305.288h-62.235L652.97 517.77 470.833 252.692H260.759l275.427 400.844-275.427 320.142h62.239l240.82-279.931 192.35 279.931h210.074L680.601 557.98zM345.423 299.545h95.595l440.024 629.411h-95.595z"
+                  />
                 </svg>
               </a>
             </li>
           </ul>
           <div className="!mt-8">
-            <h6 className="text-[13px] text-gray-400 font-medium">Book your appointment today</h6>
+            <h6 className="text-[13px] text-gray-400 font-medium">
+              Book your appointment today
+            </h6>
             <div className="mt-6">
-              <Link to="/book-appointment" className="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium py-3 px-6 tracking-wide rounded">Book Now</Link>
+              <Link
+                to="/book-appointment"
+                className="bg-blue-600 hover:bg-blue-700 text-sm text-white font-medium py-3 px-6 tracking-wide rounded"
+              >
+                Book Now
+              </Link>
             </div>
           </div>
         </div>
@@ -85,11 +166,17 @@ const Footer = () => {
 
       <hr className="my-6 border-gray-600" />
 
-      <div className="max-w-screen-xl mx-auto text-center">
+      <div className="flex justify-between max-w-screen-xl mx-auto text-start">
         <p className="text-gray-400 text-[13px]">
-          Swastik Hospital © 2024. All rights reserved.
+          Copyright © 2026 Swastik Hospital. All Rights Reserved.
+        </p>
+        <p className="text-gray-400 text-[13px]">
+          Powered by <a href="https://nextinfosys.com.np/" className="text-yellow-500" target="_blank" rel="noopener noreferrer">
+            Next Infosys Pvt. Ltd.
+          </a>
         </p>
       </div>
+      
     </footer>
   );
 };

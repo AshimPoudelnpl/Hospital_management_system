@@ -15,7 +15,7 @@ const menuitems = [
   { label: "Services", link: "/services" },
   { label: "Doctors", link: "/doctors" },
   { label: "Departments", link: "/departments", hasDropdown: true },
-  { label: "Specialists", link: "/specialists" },
+  { label: "Reviews", link: "/reviews" },
   { label: "About", link: "/about" },
   { label: "Contact", link: "/contact" },
 ];
