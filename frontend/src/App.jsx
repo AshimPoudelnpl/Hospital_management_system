@@ -1,9 +1,15 @@
-import React from "react";
-import { RouterProvider } from "react-router-dom";
-import { indexRouter } from "./router/IndexRoutes";
+import React from 'react'
+import { RouterProvider } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import { indexRouter } from './router/IndexRoutes';
 
 const App = () => {
-  return <RouterProvider router={indexRouter} />;
-};
+  return (
+    <div>
+      <RouterProvider router={indexRouter} />
+      <ToastContainer/>
+    </div>
+  )
+}
 
-export default App;
+export default App

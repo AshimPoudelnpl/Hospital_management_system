@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import db from './config/db.js';
 import { authroutes } from './routes/auth.routes.js';
@@ -14,6 +15,10 @@ import { globalErrorHandler } from './middleware/globalErrorHandler.js';
 dotenv.config();
 
 const app = express();
+app.use(cors({
+  origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
@@ -30,6 +35,13 @@ app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+try {
+  await db.ping();
+  console.log('Database connected successfully');
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+} catch (err) {
+  console.error('Database connection failed:', err.message);
+  process.exit(1);
+}

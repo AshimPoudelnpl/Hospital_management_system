@@ -1,113 +1,148 @@
-import React from 'react';
-import doctor1 from '../assets/doctors/drdhan keshar khadka.jpg';
-import doctor2 from '../assets/doctors/drdipeshguptag.png';
-import doctor3 from '../assets/doctors/drpiush kanodia.jpg';
-import doctor4 from '../assets/doctors/drpradipmishra.jpg';
-import doctor5 from '../assets/doctors/d4_1712726117.jpg';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
+import { useGetDepartmentsQuery } from "@Redux/features/departmentSlice.js";
+import Loading from "../shared/Loading";
+import { FaUserMd, FaStethoscope, FaClock } from "react-icons/fa";
 
 const Specialists = () => {
-  const specialists = [
-    {
-      name: "Dr. Dhan Keshar Khadka",
-      specialty: "Cardiologist",
-      qualification: "MBBS, MD (Cardiology)",
-      experience: "15+ years",
-      expertise: ["Heart Disease", "Cardiac Surgery", "ECG & Echo"],
-      image: doctor1,
-      fee: "Rs. 1500"
-    },
-    {
-      name: "Dr. Dipesh Gupta",
-      specialty: "Orthopedic Surgeon",
-      qualification: "MBBS, MS (Orthopedics)",
-      experience: "12+ years",
-      expertise: ["Joint Replacement", "Sports Injuries", "Trauma Surgery"],
-      image: doctor2,
-      fee: "Rs. 1200"
-    },
-    {
-      name: "Dr. Piyush Kanodia",
-      specialty: "Pediatrician",
-      qualification: "MBBS, MD (Pediatrics)",
-      experience: "10+ years",
-      expertise: ["Child Healthcare", "Vaccination", "Growth Monitoring"],
-      image: doctor3,
-      fee: "Rs. 1000"
-    },
-    {
-      name: "Dr. Pradip Mishra",
-      specialty: "General Surgeon",
-      qualification: "MBBS, MS (General Surgery)",
-      experience: "18+ years",
-      expertise: ["Laparoscopic Surgery", "Emergency Surgery", "Hernia Repair"],
-      image: doctor4,
-      fee: "Rs. 1300"
-    },
-    {
-      name: "Dr. Rajesh Sharma",
-      specialty: "Neurologist",
-      qualification: "MBBS, DM (Neurology)",
-      experience: "14+ years",
-      expertise: ["Stroke Management", "Epilepsy", "Headache Disorders"],
-      image: doctor5,
-      fee: "Rs. 1600"
-    }
-  ];
+  const navigate = useNavigate();
+  const [selectedDept, setSelectedDept] = useState("");
+
+  const { data: doctorsData, isLoading: docLoading, error } = useGetDoctorsQuery();
+  const { data: departments } = useGetDepartmentsQuery();
+
+  if (docLoading) return <Loading />;
+
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <p className="text-red-600 text-lg mb-4">Failed to load specialists.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Retry
+        </button>
+      </div>
+    );
+
+  const allDoctors = doctorsData || [];
+  const specialists = selectedDept
+    ? allDoctors.filter((d) => String(d.department_id) === selectedDept)
+    : allDoctors;
 
   return (
-    <div className="bg-gray-50 py-12">
+    <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-5xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-blue-900 mb-4">Our Medical Specialists</h1>
+
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-blue-900 mb-3">Our Medical Specialists</h1>
           <p className="text-gray-600 text-lg">Expert doctors providing specialized medical care</p>
         </div>
 
-        <div className="space-y-6">
-          {specialists.map((specialist, index) => (
-            <div 
-              key={index}
-              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition flex"
+        {/* Department filter */}
+        <div className="flex flex-wrap gap-2 justify-center mb-10">
+          <button
+            onClick={() => setSelectedDept("")}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              selectedDept === ""
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:border-blue-400"
+            }`}
+          >
+            All
+          </button>
+          {(departments || []).map((dept) => (
+            <button
+              key={dept.id}
+              onClick={() => setSelectedDept(String(dept.id))}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                selectedDept === String(dept.id)
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:border-blue-400"
+              }`}
             >
-              <img 
-                src={specialist.image} 
-                alt={specialist.name} 
-                className="w-40 h-40 object-cover object-top"
-              />
-              <div className="p-5 flex-1">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-xl font-bold text-blue-900">{specialist.name}</h3>
-                    <p className="text-green-600 font-semibold">{specialist.specialty}</p>
-                    <p className="text-sm text-gray-600">{specialist.qualification}</p>
-                  </div>
-                  <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full">{specialist.experience}</span>
-                </div>
-                <div className="mb-3">
-                  <div className="flex flex-wrap gap-2">
-                    {specialist.expertise.map((area, idx) => (
-                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                        {area}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Fee: <span className="font-semibold">{specialist.fee}</span></span>
-                  <button className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-                    Book Appointment
-                  </button>
-                </div>
-              </div>
-            </div>
+              {dept.name}
+            </button>
           ))}
         </div>
 
-        <div className="mt-12 bg-blue-900 text-white rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">Need a Specialist Consultation?</h3>
-          <p className="mb-6">Contact us for expert medical care</p>
-          <button className="bg-white text-blue-900 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-medium">
-            Contact Us
-          </button>
+        {/* List */}
+        {specialists.length > 0 ? (
+          <div className="space-y-5">
+            {specialists.map((doc, index) => (
+              <div
+                key={doc.id || index}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition flex"
+              >
+                <div className="w-36 h-36 flex-shrink-0 overflow-hidden bg-gray-100">
+                  <img
+                    src={doc.image ? `/${doc.image}` : "/default-doctor.jpg"}
+                    alt={doc.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold text-blue-900">{doc.name}</h3>
+                        <p className="text-green-600 font-semibold flex items-center gap-1 text-sm">
+                          <FaStethoscope className="text-xs" /> {doc.specialty}
+                        </p>
+                        {doc.department_name && (
+                          <p className="text-blue-500 text-xs mt-1">{doc.department_name}</p>
+                        )}
+                      </div>
+                      {doc.experience && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-1 flex-shrink-0">
+                          <FaClock className="text-xs" /> {doc.experience}
+                        </span>
+                      )}
+                    </div>
+                    {doc.description && (
+                      <p className="text-gray-500 text-sm mt-2 line-clamp-2">{doc.description}</p>
+                    )}
+                  </div>
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={() => navigate("/book-appointment")}
+                      className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                    >
+                      Book Appointment
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 text-gray-500">
+            <FaUserMd className="text-5xl mx-auto mb-4 text-gray-300" />
+            <p>No specialists found{selectedDept ? " for this department" : ""}.</p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <div className="mt-12 bg-blue-900 text-white rounded-xl p-8 text-center">
+          <h3 className="text-2xl font-bold mb-3">Need a Specialist Consultation?</h3>
+          <p className="mb-6 text-blue-200">Contact us for expert medical care</p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <button
+              onClick={() => navigate("/book-appointment")}
+              className="bg-white text-blue-900 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-medium"
+            >
+              Book Appointment
+            </button>
+            <button
+              onClick={() => navigate("/contact")}
+              className="bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 transition font-medium"
+            >
+              Contact Us
+            </button>
+          </div>
         </div>
       </div>
     </div>

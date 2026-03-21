@@ -5,8 +5,6 @@ dotenv.config();
 const islogin = (req, res, next) => {
   try {
     const token = req.cookies.token;
-
-    console.log(process.env.SECRET_KEY);
     if (!token) {
       return res
         .status(401)
