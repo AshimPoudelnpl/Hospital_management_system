@@ -119,21 +119,6 @@ const Login = () => {
                   </svg>
                 </div>
               </div>
-
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="shrink-0 h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded-md"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-3 block text-sm text-slate-900"
-                >
-                  Remember me
-                </label>
-              </div>
             </div>
 
             <div className="mt-12">

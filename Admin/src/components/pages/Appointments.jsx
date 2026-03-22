@@ -10,13 +10,6 @@ import { toast } from "react-toastify";
 
 const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
 
-const statusColor = {
-  pending: "bg-yellow-100 text-yellow-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-};
-
 const Appointments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewItem, setViewItem] = useState(null);
@@ -102,9 +95,11 @@ const Appointments = () => {
                   <select
                     value={a.status}
                     onChange={(e) => handleStatusChange(a.id, e.target.value)}
-                    className={`text-xs px-2 py-1 rounded-full font-medium border-0 cursor-pointer ${statusColor[a.status]}`}
+                    className="px-3 py-1.5 text-xs font-semibold rounded-full border border-gray-300 cursor-pointer focus:outline-none bg-white text-slate-700"
                   >
-                    {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                    {STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                    ))}
                   </select>
                 </td>
                 <td className="px-4 py-3 text-sm">

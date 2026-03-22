@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Services", link: "/services" },
   { label: "Doctors", link: "/doctors" },
   { label: "Departments", link: "/departments", hasDropdown: true },
-  { label: "Specialists", link: "/specialists" },
+  { label: "Notice", link: "/notice" },
   { label: "About", link: "/about" },
   { label: "Contact", link: "/contact" },
 ];

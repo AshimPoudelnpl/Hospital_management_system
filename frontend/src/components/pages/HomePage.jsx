@@ -54,58 +54,92 @@ const Home = () => {
 
   return (
     <>
-      {/* Hero Slider */}
-      <div className="relative w-full h-[650px] overflow-hidden">
+      {/* Hero */}
+      <style>{`
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideRight { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.08); opacity: 0.3; } }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+        @keyframes badgeSlide { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        .anim-fade-up-1 { animation: fadeUp 0.8s ease forwards; }
+        .anim-fade-up-2 { animation: fadeUp 0.8s 0.2s ease both; }
+        .anim-fade-up-3 { animation: fadeUp 0.8s 0.4s ease both; }
+        .anim-fade-up-4 { animation: fadeUp 0.8s 0.6s ease both; }
+        .anim-slide-right { animation: slideRight 0.9s 0.3s ease both; }
+        .anim-float { animation: float 3.5s ease-in-out infinite; }
+        .anim-badge { animation: badgeSlide 0.8s 0.8s ease both; }
+        .pulse-ring { animation: pulse-ring 2.5s ease-in-out infinite; }
+      `}</style>
+
+      <div className="relative w-full min-h-[650px] overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800">
+        {/* Animated background blobs */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-green-500/10 rounded-full blur-3xl"></div>
+
+        {/* Sliding background image */}
         {images.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
-          >
-            <img src={image} alt={`Slide ${index + 1}`} className="w-full h-full object-cover blur-md" />
+          <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-20" : "opacity-0"}`}>
+            <img src={image} alt={`Slide ${index + 1}`} className="w-full h-full object-cover" />
           </div>
         ))}
-        <div className="absolute inset-0 bg-black/30"></div>
 
-        <div className="absolute inset-0 flex items-center justify-between px-20">
-          <div className="flex-1 text-white">
-            <h1 className="text-5xl font-bold mb-6 ml-10">Swastik Hospital</h1>
-            <p className="text-xl mb-2">Quality healthcare services for your wellbeing</p>
-            <p className="text-lg mb-8">Experienced medical professionals dedicated to your health</p>
-            <div className="max-w-lg bg-white/80 rounded-xl p-8 shadow-lg">
-              <p className="text-lg mb-4 text-gray-800 font-medium">Book your appointment today</p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => navigate("/book-appointment")}
-                  className="bg-blue-400 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
-                >
-                  Book Appointment
-                </button>
-                <button
-                  onClick={() => navigate("/contact")}
-                  className="bg-blue-400 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
-                >
-                  Contact Us
-                </button>
-              </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 flex items-center justify-between gap-10">
+          {/* Left Content */}
+          <div className="flex-1 text-white max-w-xl">
+            <div className="anim-fade-up-1 inline-flex items-center gap-2 bg-green-500/20 border border-green-400/30 text-green-300 text-sm font-medium px-4 py-2 rounded-full mb-6">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              Trusted Healthcare Since 2005
+            </div>
+            <h1 className="anim-fade-up-2 text-5xl lg:text-6xl font-extrabold leading-tight mb-5">
+              Your Health,<br />
+              <span className="text-green-400">Our Priority</span>
+            </h1>
+            <p className="anim-fade-up-3 text-blue-200 text-lg leading-relaxed mb-8">
+              Swastik Hospital delivers world-class medical care with compassion, cutting-edge technology, and experienced specialists — all under one roof.
+            </p>
+            <div className="anim-fade-up-4 flex gap-4 flex-wrap">
+              <button onClick={() => navigate("/book-appointment")} className="bg-green-500 hover:bg-green-400 text-white px-7 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-green-500/30 hover:scale-105">
+                Book Appointment
+              </button>
+              <button onClick={() => navigate("/contact")} className="border border-white/40 hover:border-white text-white px-7 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-white/10">
+                Contact Us
+              </button>
+            </div>
+
+            {/* Mini stats */}
+            <div className="anim-fade-up-4 flex gap-8 mt-10">
+              {[{ val: "50+", label: "Doctors" }, { val: "24/7", label: "Emergency" }, { val: "15+", label: "Years" }].map((s, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl font-bold text-white">{s.val}</div>
+                  <div className="text-blue-300 text-xs mt-1">{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="flex-shrink-0 relative flex flex-col items-center z-20">
-            <div className="absolute w-[420px] h-[420px] bg-gradient-to-r from-green-400 to-green-300 rounded-full -z-10"></div>
-            <img src={doctor} alt="Doctor" className="w-[360px] relative z-10" />
-            <div className="absolute bottom-6 left-20 bg-gradient-to-r from-green-500 to-green-300 text-white px-8 py-4 rounded-full shadow-lg text-center z-20">
-              <h2 className="text-xl font-bold">Dr. Prapti Sedai</h2>
-              <p className="text-sm opacity-90">Orthopaedic Surgeon</p>
+          {/* Right — Doctor Image */}
+          <div className="anim-slide-right flex-shrink-0 relative flex items-end justify-center w-[380px] hidden lg:flex">
+            {/* Pulse rings */}
+            <div className="pulse-ring absolute w-[380px] h-[380px] rounded-full border-2 border-green-400/40"></div>
+            <div className="pulse-ring absolute w-[320px] h-[320px] rounded-full border-2 border-blue-400/30" style={{animationDelay:"0.8s"}}></div>
+            {/* Circle bg */}
+            <div className="absolute w-[300px] h-[300px] bg-gradient-to-br from-green-500/30 to-blue-600/30 rounded-full bottom-0"></div>
+            {/* Doctor */}
+            <img src={doctor} alt="Doctor" className="anim-float relative z-10 w-[320px] drop-shadow-2xl" />
+            {/* Badge */}
+            <div className="anim-badge absolute bottom-4 -left-4 bg-white text-blue-900 px-5 py-3 rounded-2xl shadow-xl z-20">
+              <p className="font-bold text-sm">Dr. Prapti Sedai</p>
+              <p className="text-xs text-green-600 font-medium">Orthopaedic Surgeon</p>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3">
+        {/* Slide dots */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
           {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? "bg-green-500 scale-125" : "bg-white/60 hover:bg-white"}`}
+            <button key={index} onClick={() => setCurrentSlide(index)}
+              className={`transition-all duration-300 rounded-full ${index === currentSlide ? "w-8 h-3 bg-green-400" : "w-3 h-3 bg-white/40 hover:bg-white/70"}`}
             />
           ))}
         </div>
@@ -181,7 +215,7 @@ const Home = () => {
                 >
                   <div className="h-56 overflow-hidden">
                     <img
-                      src={doc.image ? `/uploads/doctors/${doc.image}` : "/default-doctor.jpg"}
+                      src={doc.image ? `${import.meta.env.VITE_BACKEND_URL}/${doc.image.replace(/\\/g, "/")}` : "/default-doctor.jpg"}
                       alt={doc.name}
                       className="w-full h-full object-cover object-top"
                     />

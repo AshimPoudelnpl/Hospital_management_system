@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import Loading from "../shared/Loading";
@@ -7,7 +7,6 @@ import { FaUserMd, FaStethoscope, FaClock } from "react-icons/fa";
 const Doctors = () => {
   const navigate = useNavigate();
   const { data: doctorsData, isLoading, error } = useGetDoctorsQuery();
-  const [search, setSearch] = useState("");
 
   if (isLoading) return <Loading />;
 
@@ -24,12 +23,7 @@ const Doctors = () => {
       </div>
     );
 
-  const doctors = (doctorsData || []).filter(
-    (d) =>
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.specialty.toLowerCase().includes(search.toLowerCase()) ||
-      (d.department_name || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const doctors = doctorsData || [];
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
@@ -42,17 +36,6 @@ const Doctors = () => {
           </p>
         </div>
 
-        {/* Search */}
-        <div className="max-w-md mx-auto mb-10">
-          <input
-            type="text"
-            placeholder="Search by name, specialty or department..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-5 py-3 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
         {/* Grid */}
         {doctors.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -63,7 +46,7 @@ const Doctors = () => {
               >
                 <div className="h-64 overflow-hidden bg-gray-100">
                   <img
-                    src={doctor.image ? `/${doctor.image}` : "/default-doctor.jpg"}
+                    src={doctor.image ? `${import.meta.env.VITE_BACKEND_URL}/${doctor.image.replace(/\\/g, "/")}` : "/default-doctor.jpg"}
                     alt={doctor.name}
                     className="w-full h-full object-cover object-top"
                   />
@@ -99,7 +82,7 @@ const Doctors = () => {
         ) : (
           <div className="text-center py-16 text-gray-500">
             <FaUserMd className="text-5xl mx-auto mb-4 text-gray-300" />
-            <p>No doctors found{search ? ` for "${search}"` : ""}.</p>
+            <p>No doctors found.</p>
           </div>
         )}
 

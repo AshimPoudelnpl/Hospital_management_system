@@ -42,34 +42,7 @@ const Specialists = () => {
           <p className="text-gray-600 text-lg">Expert doctors providing specialized medical care</p>
         </div>
 
-        {/* Department filter */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          <button
-            onClick={() => setSelectedDept("")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-              selectedDept === ""
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:border-blue-400"
-            }`}
-          >
-            All
-          </button>
-          {(departments || []).map((dept) => (
-            <button
-              key={dept.id}
-              onClick={() => setSelectedDept(String(dept.id))}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                selectedDept === String(dept.id)
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:border-blue-400"
-              }`}
-            >
-              {dept.name}
-            </button>
-          ))}
-        </div>
-
-        {/* List */}
+{/* List */}
         {specialists.length > 0 ? (
           <div className="space-y-5">
             {specialists.map((doc, index) => (

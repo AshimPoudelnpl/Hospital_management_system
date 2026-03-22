@@ -50,36 +50,7 @@ const Departments = () => {
           </p>
         </div>
 
-        {/* Filter tabs */}
-        {departments.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-center mb-10">
-            <button
-              onClick={() => navigate("/departments")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                !selectedId
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:border-blue-400"
-              }`}
-            >
-              All
-            </button>
-            {departments.map((dept) => (
-              <button
-                key={dept.id}
-                onClick={() => navigate(`/departments?id=${dept.id}`)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedId === String(dept.id)
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:border-blue-400"
-                }`}
-              >
-                {dept.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {departments.length > 0 ? (
+{departments.length > 0 ? (
           <div className="space-y-8">
             {departments
               .filter((dept) => !selectedId || String(dept.id) === selectedId)
