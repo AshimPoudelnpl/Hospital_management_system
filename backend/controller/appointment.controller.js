@@ -1,4 +1,8 @@
 import db from "../config/db.js";
+import {
+  sendAdminAppointmentNotification,
+  sendAppointmentConfirmationEmail,
+} from "../utils/emailService.js";
 
 export const createAppointment = async (req, res, next) => {
   try {
@@ -43,9 +47,47 @@ export const createAppointment = async (req, res, next) => {
         message || null,
       ],
     );
+
     res
       .status(201)
       .json({ message: "Appointment booked", id: result.insertId });
+
+    try {
+      const [[doctor]] = await db.execute(
+        "SELECT name FROM doctors WHERE id = ?",
+        [doctor_id],
+      );
+      const [[department]] = await db.execute(
+        "SELECT name FROM departments WHERE id = ?",
+        [department_id],
+      );
+
+      const emailPayload = {
+        appointmentId: result.insertId,
+        patient_name,
+        patient_email,
+        patient_phone,
+        appointment_date,
+        appointment_time,
+        department_name: department?.name,
+        doctor_name: doctor?.name,
+        message,
+      };
+
+      const emailResults = await Promise.allSettled([
+        sendAppointmentConfirmationEmail(emailPayload),
+        sendAdminAppointmentNotification(emailPayload),
+      ]);
+
+      emailResults.forEach((result, index) => {
+        if (result.status === "rejected") {
+          const emailTarget = index === 0 ? "patient" : "admin";
+          console.error(`Failed to send ${emailTarget} email:`, result.reason);
+        }
+      });
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
   } catch (error) {
     next(error);
   }
@@ -103,7 +145,9 @@ export const updateAppointmentStatus = async (req, res, next) => {
       status,
       req.params.id,
     ]);
-    res.status(200).json({ message: "Appointment status updated" ,data:{status}});
+    res
+      .status(200)
+      .json({ message: "Appointment status updated", data: { status } });
   } catch (error) {
     next(error);
   }

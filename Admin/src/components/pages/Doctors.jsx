@@ -60,7 +60,9 @@ const Doctors = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fd = new FormData();
-    Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
+    Object.entries(formData).forEach(([k, v]) => {
+      if (v !== null && v !== undefined) fd.append(k, v);
+    });
     if (imageFile) fd.append("image", imageFile);
     try {
       if (isAdding) { await addDoctor(fd).unwrap(); toast.success("Doctor added"); }

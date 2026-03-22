@@ -19,13 +19,12 @@ const initialForm = {
 const BookAppointment = () => {
   const [form, setForm] = useState(initialForm);
 
-  const { data: departments, isLoading: deptLoading } = useGetDepartmentsQuery();
-  const { data: doctors, isLoading: docLoading } = useGetDoctorsQuery();
+  const { data: departments, isLoading: deptLoading } =
+    useGetDepartmentsQuery();
+  const { data: doctors, isLoading: docLoading } = useGetDoctorsQuery(form.department_id || undefined);
   const [bookAppointment, { isLoading }] = useBookAppointmentMutation();
 
-  const filteredDoctors = form.department_id
-    ? (doctors || []).filter((d) => String(d.department_id) === String(form.department_id))
-    : doctors || [];
+  const filteredDoctors = doctors || [];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +46,8 @@ const BookAppointment = () => {
       toast.success("Appointment booked successfully!");
       setForm(initialForm);
     } catch (err) {
-      const msg = err?.data?.message || "Failed to book appointment. Please try again.";
+      const msg =
+        err?.data?.message || "Failed to book appointment. Please try again.";
       toast.error(msg);
     }
   };
@@ -58,16 +58,23 @@ const BookAppointment = () => {
     <div className="bg-gray-50 py-12">
       <div className="max-w-2xl mx-auto px-4">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-blue-900 mb-3">Book an Appointment</h1>
+          <h1 className="text-4xl font-bold text-blue-900 mb-3">
+            Book an Appointment
+          </h1>
           <p className="text-gray-600">
-            Fill in the details below and we'll confirm your appointment shortly.
+            Fill in the details below and we'll confirm your appointment
+            shortly.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8 space-y-5">
-
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-lg shadow-lg p-8 space-y-5"
+        >
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Patient Name *</label>
+            <label className="block text-gray-700 font-medium mb-1">
+              Patient Name *
+            </label>
             <input
               type="text"
               name="patient_name"
@@ -80,7 +87,9 @@ const BookAppointment = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Email *</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Email *
+              </label>
               <input
                 type="email"
                 name="patient_email"
@@ -91,7 +100,9 @@ const BookAppointment = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Phone *</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Phone *
+              </label>
               <input
                 type="text"
                 name="patient_phone"
@@ -105,7 +116,9 @@ const BookAppointment = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Department *</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Department *
+              </label>
               <select
                 name="department_id"
                 value={form.department_id}
@@ -115,22 +128,31 @@ const BookAppointment = () => {
               >
                 <option value="">Select Department</option>
                 {(departments || []).map((dept) => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                  <option key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Doctor *</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Doctor *
+              </label>
               <select
                 name="doctor_id"
                 value={form.doctor_id}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 bg-white"
+                disabled={!form.department_id}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
-                <option value="">Select Doctor</option>
+                <option value="">
+                  {!form.department_id ? "Select a department first" : filteredDoctors.length === 0 ? "No doctors available" : "Select Doctor"}
+                </option>
                 {filteredDoctors.map((doc) => (
-                  <option key={doc.id} value={doc.id}>{doc.name}</option>
+                  <option key={doc.id} value={doc.id}>
+                    {doc.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -138,7 +160,9 @@ const BookAppointment = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Appointment Date *</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Appointment Date *
+              </label>
               <input
                 type="date"
                 name="appointment_date"
@@ -150,7 +174,9 @@ const BookAppointment = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Appointment Time *</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Appointment Time *
+              </label>
               <input
                 type="time"
                 name="appointment_time"
@@ -163,7 +189,9 @@ const BookAppointment = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Message</label>
+            <label className="block text-gray-700 font-medium mb-1">
+              Message
+            </label>
             <textarea
               name="message"
               value={form.message}

@@ -155,7 +155,7 @@ const Login = () => {
                 )}
               </button>
               <p className="text-sm mt-6 text-center text-slate-600">
-                © {new Date().getFullYear()} Sastik Hospital. All rights
+                © {new Date().getFullYear()} Swastik Hospital. All rights
                 reserved.
               </p>
             </div>

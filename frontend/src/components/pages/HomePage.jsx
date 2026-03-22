@@ -18,7 +18,18 @@ import {
   FaFlask,
   FaCheckCircle,
   FaArrowRight,
+  FaStar,
+  FaQuoteLeft,
 } from "react-icons/fa";
+
+const reviews = [
+  { name: "Sita Sharma", role: "Patient", rating: 5, text: "Excellent care and very professional staff. The doctors were thorough and explained everything clearly. Highly recommend Swastik Hospital!" },
+  { name: "Ram Thapa", role: "Patient", rating: 5, text: "I had my surgery here and the entire team was amazing. From admission to discharge, everything was smooth and well-organized." },
+  { name: "Anita Gurung", role: "Patient", rating: 4, text: "Very clean facility with modern equipment. The doctors are experienced and the nurses are caring. Great experience overall." },
+  { name: "Bikash Rai", role: "Patient", rating: 5, text: "Emergency services were incredibly fast. The staff responded immediately and provided excellent treatment. Truly a lifesaver!" },
+  { name: "Priya Shrestha", role: "Patient", rating: 5, text: "Best hospital in the area. Affordable pricing and top-notch medical care. The pediatric department took great care of my child." },
+  { name: "Deepak Karki", role: "Patient", rating: 4, text: "Friendly and knowledgeable doctors. The appointment booking process was easy and the waiting time was minimal. Very satisfied." },
+];
 
 const fallbackServices = [
   { title: "Cardiology", icon: <FaHeartbeat />, description: "Swastik Hospital provides comprehensive heart care and advanced cardiac treatments for patients." },
@@ -259,6 +270,39 @@ const Home = () => {
                 <div>
                   <h3 className="text-xl font-bold mb-2">{item.title}</h3>
                   <p className="text-blue-100">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Reviews */}
+      <div className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="text-blue-600 font-semibold text-sm uppercase tracking-widest">Testimonials</span>
+            <h2 className="text-3xl font-bold text-blue-900 mt-2">What Our Patients Say</h2>
+            <p className="text-gray-500 mt-2">Real experiences from people we've had the privilege to care for</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviews.map((review, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-md p-6 flex flex-col gap-4 hover:shadow-lg transition">
+                <FaQuoteLeft className="text-blue-100 text-4xl" />
+                <p className="text-gray-600 text-sm leading-relaxed -mt-2">{review.text}</p>
+                <div className="flex gap-0.5 mt-auto">
+                  {Array.from({ length: 5 }).map((_, s) => (
+                    <FaStar key={s} className={s < review.rating ? "text-yellow-400" : "text-gray-200"} size={14} />
+                  ))}
+                </div>
+                <div className="flex items-center gap-3 border-t border-gray-100 pt-4">
+                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {review.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800 text-sm">{review.name}</p>
+                    <p className="text-xs text-gray-400">{review.role}</p>
+                  </div>
                 </div>
               </div>
             ))}

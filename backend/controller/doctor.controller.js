@@ -24,8 +24,8 @@ export const createDoctor = async (req, res, next) => {
         experience,
         description,
         image,
-        display_order || null,
-        department_id || null,
+        display_order ,
+        department_id ? parseInt(department_id) : null,
       ],
     );
     res.status(201).json({ message: "Doctor created", id: result.insertId });
@@ -36,12 +36,17 @@ export const createDoctor = async (req, res, next) => {
 
 export const getAllDoctors = async (req, res, next) => {
   try {
-    const [rows] = await db.execute(
-      `SELECT d.*, dep.name AS department_name 
+    const { department_id } = req.query;
+    let query = `SELECT d.*, dep.name AS department_name 
        FROM doctors d 
-       LEFT JOIN departments dep ON d.department_id = dep.id 
-       ORDER BY d.display_order ASC, d.created_at DESC`,
-    );
+       LEFT JOIN departments dep ON d.department_id = dep.id`;
+    const params = [];
+    if (department_id) {
+      query += ` WHERE d.department_id = ?`;
+      params.push(parseInt(department_id));
+    }
+    query += ` ORDER BY d.display_order ASC, d.created_at DESC`;
+    const [rows] = await db.execute(query, params);
     res.status(200).json(rows);
   } catch (error) {
     next(error);
@@ -91,7 +96,7 @@ export const updateDoctor = async (req, res, next) => {
         description,
         image,
         display_order || null,
-        department_id || null,
+        department_id ? parseInt(department_id) : null,
         req.params.id,
       ],
     );
