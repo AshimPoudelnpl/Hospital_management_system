@@ -10,6 +10,7 @@ import { serviceroutes } from './routes/services.route.js';
 import { noticeroutes } from './routes/notice.routes.js';
 import { appointmentroutes } from './routes/appointment.routes.js';
 import { contactroutes } from './routes/contact.routes.js';
+import { reviewroutes } from './routes/review.routes.js';
 import { globalErrorHandler } from './middleware/globalErrorHandler.js';
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/services', serviceroutes);
 app.use('/api/notices', noticeroutes);
 app.use('/api/appointments', appointmentroutes);
 app.use('/api/contacts', contactroutes);
+app.use('/api/reviews', reviewroutes);
 
 app.use(globalErrorHandler);
 

@@ -5,8 +5,14 @@ import {
   useUpdateDepartmentMutation,
   useDeleteDepartmentMutation,
 } from "../../Redux/features/departmentSlice";
-import Modal from "../shared/DetailsModal";
-import Select from "../shared/Select";
+import Modal from "../ui/DetailsModal";
+import Button from "../ui/Button";
+import FormInput from "../ui/FormInput";
+import FormTextarea from "../ui/FormTextarea";
+import SearchBar from "../ui/SearchBar";
+import Loading from "../shared/Loading";
+import Skeleton from "../shared/Skeleton";
+import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const EMPTY = { name: "", description: "", head_doctor: "" };
@@ -33,13 +39,18 @@ const Departments = () => {
   );
 
   const openAdd = () => {
-    setIsAdding(true); setIsViewing(false);
-    setFormData(EMPTY); setServices([]); setServiceInput(""); setImageFile(null);
+    setIsAdding(true);
+    setIsViewing(false);
+    setFormData(EMPTY);
+    setServices([]);
+    setServiceInput("");
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
   const openEdit = (dept) => {
-    setIsAdding(false); setIsViewing(false);
+    setIsAdding(false);
+    setIsViewing(false);
     setEditId(dept.id);
     setFormData({ name: dept.name, description: dept.description || "", head_doctor: dept.head_doctor || "" });
     setServices((dept.services || []).map((s) => s.service_name));
@@ -47,14 +58,20 @@ const Departments = () => {
     setIsModalOpen(true);
   };
 
-  const openView = (dept) => { setIsViewing(true); setViewItem(dept); setIsModalOpen(true); };
+  const openView = (dept) => {
+    setIsViewing(true);
+    setViewItem(dept);
+    setIsModalOpen(true);
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this department?")) return;
     try {
       await deleteDepartment(id).unwrap();
       toast.success("Department deleted");
-    } catch { toast.error("Failed to delete"); }
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
 
   const addService = () => {
@@ -72,10 +89,17 @@ const Departments = () => {
     fd.append("services", JSON.stringify(services));
     if (imageFile) fd.append("image", imageFile);
     try {
-      if (isAdding) { await addDepartment(fd).unwrap(); toast.success("Department added"); }
-      else { await updateDepartment({ id: editId, body: fd }).unwrap(); toast.success("Department updated"); }
+      if (isAdding) {
+        await addDepartment(fd).unwrap();
+        toast.success("Department added");
+      } else {
+        await updateDepartment({ id: editId, body: fd }).unwrap();
+        toast.success("Department updated");
+      }
       setIsModalOpen(false);
-    } catch { toast.error(isAdding ? "Failed to add" : "Failed to update"); }
+    } catch {
+      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    }
   };
 
   const actionOptions = [
@@ -92,15 +116,15 @@ const Departments = () => {
     e.target.value = "";
   };
 
-  if (isLoading) return <div className="p-6">Loading...</div>;
+  if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Departments</h1>
         <div className="flex gap-3">
-          <input type="text" placeholder="Search departments..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-3 py-2 border rounded-lg text-sm w-60" />
-          <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Add Department</button>
+          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search departments..." />
+          <Button onClick={openAdd} variant="primary">Add Department</Button>
         </div>
       </div>
 
@@ -155,19 +179,19 @@ const Departments = () => {
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded-lg text-sm">Close</button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
-            <input type="text" placeholder="Department Name *" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full p-2 border rounded-lg text-sm" required />
-            <input type="text" placeholder="Head Doctor" value={formData.head_doctor} onChange={(e) => setFormData({ ...formData, head_doctor: e.target.value })} className="w-full p-2 border rounded-lg text-sm" />
-            <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full p-2 border rounded-lg text-sm" rows={3} />
+            <FormInput placeholder="Department Name *" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+            <FormInput placeholder="Head Doctor" value={formData.head_doctor} onChange={(e) => setFormData({ ...formData, head_doctor: e.target.value })} />
+            <FormTextarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
             <div>
               <label className="text-xs text-gray-500 mb-1 block">Services</label>
               <div className="flex gap-2">
                 <input type="text" placeholder="Add service..." value={serviceInput} onChange={(e) => setServiceInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addService())} className="flex-1 p-2 border rounded-lg text-sm" />
-                <button type="button" onClick={addService} className="px-3 py-2 bg-slate-100 rounded-lg text-sm hover:bg-slate-200">Add</button>
+                <Button type="button" onClick={addService} variant="secondary" size="sm">Add</Button>
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
                 {services.map((s) => (
@@ -183,8 +207,8 @@ const Departments = () => {
               <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full text-sm" />
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded-lg text-sm">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">{isAdding ? "Add" : "Update"}</button>
+              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
+              <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
             </div>
           </form>
         )}

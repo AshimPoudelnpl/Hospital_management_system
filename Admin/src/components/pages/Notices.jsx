@@ -5,8 +5,14 @@ import {
   useUpdateNoticeMutation,
   useDeleteNoticeMutation,
 } from "../../Redux/features/noticeSlice";
-import Modal from "../shared/DetailsModal";
-import Select from "../shared/Select";
+import Modal from "../ui/DetailsModal";
+import Button from "../ui/Button";
+import FormInput from "../ui/FormInput";
+import FormTextarea from "../ui/FormTextarea";
+import SearchBar from "../ui/SearchBar";
+import Loading from "../shared/Loading";
+import Skeleton from "../shared/Skeleton";
+import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const EMPTY = { title: "", content: "" };
@@ -30,35 +36,50 @@ const Notices = () => {
   );
 
   const openAdd = () => {
-    setIsAdding(true); setIsViewing(false);
+    setIsAdding(true);
+    setIsViewing(false);
     setFormData(EMPTY);
     setIsModalOpen(true);
   };
 
   const openEdit = (notice) => {
-    setIsAdding(false); setIsViewing(false);
+    setIsAdding(false);
+    setIsViewing(false);
     setEditId(notice.id);
     setFormData({ title: notice.title, content: notice.content });
     setIsModalOpen(true);
   };
 
-  const openView = (notice) => { setIsViewing(true); setViewItem(notice); setIsModalOpen(true); };
+  const openView = (notice) => {
+    setIsViewing(true);
+    setViewItem(notice);
+    setIsModalOpen(true);
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this notice?")) return;
     try {
       await deleteNotice(id).unwrap();
       toast.success("Notice deleted");
-    } catch { toast.error("Failed to delete"); }
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isAdding) { await addNotice(formData).unwrap(); toast.success("Notice added"); }
-      else { await updateNotice({ id: editId, ...formData }).unwrap(); toast.success("Notice updated"); }
+      if (isAdding) {
+        await addNotice(formData).unwrap();
+        toast.success("Notice added");
+      } else {
+        await updateNotice({ id: editId, ...formData }).unwrap();
+        toast.success("Notice updated");
+      }
       setIsModalOpen(false);
-    } catch { toast.error(isAdding ? "Failed to add" : "Failed to update"); }
+    } catch {
+      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    }
   };
 
   const actionOptions = [
@@ -75,15 +96,15 @@ const Notices = () => {
     e.target.value = "";
   };
 
-  if (isLoading) return <div className="p-6">Loading...</div>;
+  if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Notices</h1>
         <div className="flex gap-3">
-          <input type="text" placeholder="Search notices..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-3 py-2 border rounded-lg text-sm w-60" />
-          <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Add Notice</button>
+          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search notices..." />
+          <Button onClick={openAdd} variant="primary">Add Notice</Button>
         </div>
       </div>
 
@@ -135,16 +156,16 @@ const Notices = () => {
               <p className="text-sm text-slate-800">{viewItem?.created_at ? new Date(viewItem.created_at).toLocaleString() : "—"}</p>
             </div>
             <div className="flex justify-end pt-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded-lg text-sm">Close</button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
-            <input type="text" placeholder="Title *" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full p-2 border rounded-lg text-sm" required />
-            <textarea placeholder="Content *" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} className="w-full p-2 border rounded-lg text-sm" rows={5} required />
+            <FormInput placeholder="Title *" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+            <FormTextarea placeholder="Content *" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={5} required />
             <div className="flex justify-end gap-2 pt-1">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded-lg text-sm">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">{isAdding ? "Add" : "Update"}</button>
+              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
+              <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
             </div>
           </form>
         )}

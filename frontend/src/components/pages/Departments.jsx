@@ -2,6 +2,9 @@ import React, { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useGetDepartmentsQuery } from "@Redux/features/departmentSlice.js";
 import Loading from "../shared/Loading";
+import Skeleton from "../shared/Skeleton";
+import DepartmentCard from "../ui/DepartmentCard";
+import CTASection from "../ui/CTASection";
 import { FaHospital } from "react-icons/fa";
 
 const Departments = () => {
@@ -21,7 +24,7 @@ const Departments = () => {
     }
   }, [selectedId, departmentsData]);
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <Skeleton variant="card" count={3} />;
 
   if (error)
     return (
@@ -55,65 +58,11 @@ const Departments = () => {
             {departments
               .filter((dept) => !selectedId || String(dept.id) === selectedId)
               .map((dept, index) => (
-                <div
-                  key={dept.id || index}
-                  ref={(el) => (deptRefs.current[String(dept.id)] = el)}
-                  className={`bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 flex flex-col ${
-                    index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-                  } ${
-                    selectedId === String(dept.id)
-                      ? "ring-2 ring-blue-500 shadow-xl"
-                      : "hover:shadow-xl"
-                  }`}
-                >
-                  {/* Image */}
-                  <div className="lg:w-1/3 h-64 lg:h-auto overflow-hidden bg-gray-100 flex-shrink-0">
-                    <img
-                      src={dept.image ? `/${dept.image}` : "/default-dept.jpg"}
-                      alt={dept.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <div className="lg:w-2/3 p-6 lg:p-8 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-2xl font-bold text-blue-900 mb-3">{dept.name}</h3>
-                      {dept.description && (
-                        <p className="text-gray-600 mb-4 leading-relaxed">{dept.description}</p>
-                      )}
-
-                      {dept.services && dept.services.length > 0 && (
-                        <div className="mb-4">
-                          <h4 className="font-semibold text-gray-800 mb-2 text-sm">Services Offered:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {dept.services.map((s) => (
-                              <span
-                                key={s.id}
-                                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm"
-                              >
-                                {s.service_name}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between mt-4">
-                      {dept.head_doctor && (
-                        <p className="text-sm text-gray-600">
-                          <span className="font-semibold">Department Head:</span> {dept.head_doctor}
-                        </p>
-                      )}
-                      <button
-                        onClick={() => navigate("/book-appointment")}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm ml-auto"
-                      >
-                        Book Appointment
-                      </button>
-                    </div>
-                  </div>
+                <div key={dept.id || index} ref={(el) => (deptRefs.current[String(dept.id)] = el)}>
+                  <DepartmentCard
+                    department={dept}
+                    isSelected={selectedId === String(dept.id)}
+                  />
                 </div>
               ))}
           </div>
@@ -125,25 +74,15 @@ const Departments = () => {
         )}
 
         {/* CTA */}
-        <div className="mt-16 bg-blue-900 text-white rounded-xl p-8 text-center">
-          <h3 className="text-2xl font-bold mb-3">Need More Information?</h3>
-          <p className="mb-6 text-blue-200">
-            Contact our departments directly for specialized consultation and appointments
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <button
-              onClick={() => navigate("/book-appointment")}
-              className="bg-white text-blue-900 px-8 py-3 rounded-lg hover:bg-gray-100 transition font-medium"
-            >
-              Book Appointment
-            </button>
-            <button
-              onClick={() => navigate("/contact")}
-              className="bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 transition font-medium"
-            >
-              Contact Us
-            </button>
-          </div>
+        <div className="mt-16">
+          <CTASection
+            title="Need More Information?"
+            description="Contact our departments directly for specialized consultation and appointments"
+            buttons={[
+              { label: "Book Appointment", path: "/book-appointment", variant: "primary" },
+              { label: "Contact Us", path: "/contact", variant: "success" },
+            ]}
+          />
         </div>
       </div>
     </div>

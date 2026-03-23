@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useLoginMutation } from "../Redux/features/authSlice";
-import { setCredentials } from "../Redux/features/authState";
+import { useLoginMutation } from "../../Redux/features/authSlice";
+import { setCredentials } from "../../Redux/features/authState";
 import { toast } from "react-toastify";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });

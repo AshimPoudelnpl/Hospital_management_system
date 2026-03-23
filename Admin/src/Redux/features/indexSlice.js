@@ -6,6 +6,6 @@ export const indexSlice = createApi({
     baseUrl: import.meta.env.VITE_API_URL,
     credentials: "include",
   }),
-  tagTypes: ["doctors", "departments", "services", "appointments", "notices", "contacts", "auth", "branches", "districts"],
+  tagTypes: ["doctors", "departments", "services", "appointments", "notices", "contacts", "auth", "branches", "districts", "reviews"],
   endpoints: () => ({}),
 });

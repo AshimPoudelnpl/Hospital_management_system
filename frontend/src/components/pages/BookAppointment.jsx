@@ -3,6 +3,7 @@ import { useBookAppointmentMutation } from "@Redux/features/appointmentSlice.js"
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import { useGetDepartmentsQuery } from "@Redux/features/departmentSlice.js";
 import Loading from "../shared/Loading";
+import Skeleton from "../shared/Skeleton";
 import { toast } from "react-toastify";
 
 const initialForm = {
@@ -52,7 +53,7 @@ const BookAppointment = () => {
     }
   };
 
-  if (deptLoading || docLoading) return <Loading />;
+  if (deptLoading || docLoading) return <Skeleton variant="form" count={4} />;
 
   return (
     <div className="bg-gray-50 py-12">

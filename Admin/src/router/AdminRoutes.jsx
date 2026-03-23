@@ -5,6 +5,7 @@ import Services from "../components/pages/Services";
 import Appointments from "../components/pages/Appointments";
 import Notices from "../components/pages/Notices";
 import Contacts from "../components/pages/Contacts";
+import Reviews from "../components/pages/Reviews";
 import Profile from "../components/pages/Profile";
 
 export const adminRoutes = [
@@ -15,5 +16,6 @@ export const adminRoutes = [
   { path: "appointments", element: <Appointments /> },
   { path: "notices", element: <Notices /> },
   { path: "contacts", element: <Contacts /> },
+  { path: "reviews", element: <Reviews /> },
   { path: "profile", element: <Profile /> },
 ];

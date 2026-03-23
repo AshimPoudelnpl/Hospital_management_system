@@ -4,8 +4,12 @@ import {
   useUpdateAppointmentStatusMutation,
   useDeleteAppointmentMutation,
 } from "../../Redux/features/appointmentSlice";
-import Modal from "../shared/DetailsModal";
-import Select from "../shared/Select";
+import Modal from "../ui/DetailsModal";
+import SearchBar from "../ui/SearchBar";
+import Loading from "../shared/Loading";
+import Skeleton from "../shared/Skeleton";
+import Button from "../ui/Button";
+import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
@@ -33,7 +37,9 @@ const Appointments = () => {
     try {
       await updateStatus({ id, status }).unwrap();
       toast.success("Status updated");
-    } catch { toast.error("Failed to update status"); }
+    } catch {
+      toast.error("Failed to update status");
+    }
   };
 
   const handleDelete = async (id) => {
@@ -41,7 +47,9 @@ const Appointments = () => {
     try {
       await deleteAppointment(id).unwrap();
       toast.success("Appointment deleted");
-    } catch { toast.error("Failed to delete"); }
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
 
   const actionOptions = [
@@ -51,19 +59,21 @@ const Appointments = () => {
 
   const handleAction = (e, a) => {
     const val = e.target.value;
-    if (val === "View") { setViewItem(a); setIsModalOpen(true); }
-    else if (val === "Delete") handleDelete(a.id);
+    if (val === "View") {
+      setViewItem(a);
+      setIsModalOpen(true);
+    } else if (val === "Delete") handleDelete(a.id);
     e.target.value = "";
   };
 
-  if (isLoading) return <div className="p-6">Loading...</div>;
+  if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Appointments</h1>
         <div className="flex gap-3">
-          <input type="text" placeholder="Search patient, doctor..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-3 py-2 border rounded-lg text-sm w-56" />
+          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search patient, doctor..." />
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
             <option value="">All Status</option>
             {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
@@ -138,7 +148,7 @@ const Appointments = () => {
               </div>
             )}
             <div className="flex justify-end pt-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded-lg text-sm">Close</button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
             </div>
           </div>
         )}
