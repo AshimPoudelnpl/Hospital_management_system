@@ -323,7 +323,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-green-50 p-8 rounded-lg border-l-4 border-blue-600">
+            <div className="bg-linear-to-br from-blue-50 to-green-50 p-8 rounded-lg border-l-4 border-blue-600">
               <div className="text-5xl text-blue-600 mb-4">
                 <FaLightbulb />
               </div>
