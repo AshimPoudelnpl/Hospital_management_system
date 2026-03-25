@@ -1,6 +1,5 @@
 import db from "../config/db.js";
 
-// CREATE REVIEW
 export const createReview = async (req, res, next) => {
   try {
     const { name, role, rating, text } = req.body;
@@ -31,13 +30,13 @@ export const createReview = async (req, res, next) => {
   }
 };
 
-// GET ALL REVIEWS
 export const getAllReviews = async (req, res, next) => {
   try {
     const [rows] = await db.execute(
       `SELECT id, name, rating, review_text AS text, created_at
        FROM reviews
-       ORDER BY created_at DESC`
+       ORDER BY created_at DESC`,
+      []
     );
 
     res.status(200).json(rows);
@@ -46,7 +45,6 @@ export const getAllReviews = async (req, res, next) => {
   }
 };
 
-// GET REVIEW BY ID
 export const getReviewById = async (req, res, next) => {
   try {
     const [rows] = await db.execute(
@@ -68,7 +66,6 @@ export const getReviewById = async (req, res, next) => {
   }
 };
 
-// UPDATE REVIEW
 export const updateReview = async (req, res, next) => {
   try {
     const { name, rating, text } = req.body;
@@ -92,7 +89,6 @@ export const updateReview = async (req, res, next) => {
   }
 };
 
-// DELETE REVIEW
 export const deleteReview = async (req, res, next) => {
   try {
     const [result] = await db.execute(

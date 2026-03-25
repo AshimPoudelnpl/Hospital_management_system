@@ -18,8 +18,39 @@ export const createService = async (req, res, next) => {
 
 export const getAllServices = async (req, res, next) => {
   try {
-    const [rows] = await db.execute("SELECT * FROM services ORDER BY created_at DESC");
-    res.status(200).json(rows);
+    const { search, page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = (pageNum - 1) * pageSize;
+
+    let query = `SELECT * FROM services`;
+    let countQuery = `SELECT COUNT(*) as total FROM services`;
+    const params = [];
+    const countParams = [];
+
+    if (search) {
+      const searchTerm = `%${search}%`;
+      query += ` WHERE title LIKE ? OR description LIKE ?`;
+      countQuery += ` WHERE title LIKE ? OR description LIKE ?`;
+      params.push(searchTerm, searchTerm);
+      countParams.push(searchTerm, searchTerm);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
+
+    const [rows] = await db.execute(query, params);
+    const [countResult] = await db.execute(countQuery, countParams);
+    const total = countResult[0].total;
+
+    res.status(200).json({
+      data: rows,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: pageSize,
+        pages: Math.ceil(total / pageSize),
+      },
+    });
   } catch (error) {
     next(error);
   }

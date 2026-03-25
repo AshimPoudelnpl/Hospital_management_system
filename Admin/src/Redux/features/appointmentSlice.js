@@ -3,7 +3,8 @@ import { indexSlice } from "./indexSlice";
 export const appointmentAPIs = indexSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAppointments: builder.query({
-      query: () => ({ url: "/appointments", method: "GET" }),
+      query: () => ({ url: "/appointments", method: "GET", params: { limit: 100 } }),
+      transformResponse: (response) => response.data ?? response,
       providesTags: ["appointments"],
     }),
     getAppointmentById: builder.query({

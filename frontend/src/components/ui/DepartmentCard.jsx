@@ -7,7 +7,7 @@ const DepartmentCard = ({ department, isSelected, onBook }) => {
     if (onBook) {
       onBook(department);
     } else {
-      navigate("/book-appointment");
+      navigate(`/book-appointment?department_id=${department.id}`);
     }
   };
 

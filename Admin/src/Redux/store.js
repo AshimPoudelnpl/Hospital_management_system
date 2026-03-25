@@ -13,6 +13,8 @@ const persistConfig = {
   key: "root",
   storage,
   whitelist: ["user"],
+  serialize: JSON.stringify,
+  deserialize: JSON.parse,
 };
 const persistedReducer = persistReducer(persistConfig, authReducer);
 

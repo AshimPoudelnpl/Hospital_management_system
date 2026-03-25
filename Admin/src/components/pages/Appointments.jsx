@@ -5,6 +5,8 @@ import {
   useDeleteAppointmentMutation,
 } from "../../Redux/features/appointmentSlice";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import SearchBar from "../ui/SearchBar";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
@@ -16,13 +18,15 @@ const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
 
 const Appointments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
   const { data: appointments = [], isLoading } = useGetAppointmentsQuery();
   const [updateStatus] = useUpdateAppointmentStatusMutation();
-  const [deleteAppointment] = useDeleteAppointmentMutation();
+  const [deleteAppointment, { isLoading: isDeleting }] = useDeleteAppointmentMutation();
 
   const filtered = appointments.filter((a) => {
     const matchSearch =
@@ -43,12 +47,17 @@ const Appointments = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this appointment?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteAppointment(id).unwrap();
+      await deleteAppointment(confirmAction.id).unwrap();
       toast.success("Appointment deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
@@ -81,45 +90,36 @@ const Appointments = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-slate-100">
-            <tr>
-              {["#", "Patient", "Doctor", "Department", "Date", "Time", "Status", "Action"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-slate-700">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan="8" className="px-4 py-4 text-center text-gray-400">No appointments found</td></tr>
-            ) : filtered.map((a, i) => (
-              <tr key={a.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
-                <td className="px-4 py-3 text-sm text-slate-700 font-medium">{a.patient_name}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{a.doctor_name || "—"}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{a.department_name || "—"}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{a.appointment_date}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{a.appointment_time}</td>
-                <td className="px-4 py-3">
-                  <select
-                    value={a.status}
-                    onChange={(e) => handleStatusChange(a.id, e.target.value)}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-full border border-gray-300 cursor-pointer focus:outline-none bg-white text-slate-700"
-                  >
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  <Select options={actionOptions} placeholder="Action" onChange={(e) => handleAction(e, a)} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        headers={["#", "Patient", "Doctor", "Department", "Date", "Time", "Status", "Action"]}
+        rows={filtered.map((a, i) => ({
+          id: a.id,
+          cells: [
+            { content: i + 1, className: "text-slate-600" },
+            { content: a.patient_name, className: "font-medium text-slate-700" },
+            { content: a.doctor_name || "—", className: "text-slate-600" },
+            { content: a.department_name || "—", className: "text-slate-600" },
+            { content: a.appointment_date, className: "text-slate-600" },
+            { content: a.appointment_time, className: "text-slate-600" },
+            {
+              content: (
+                <select
+                  value={a.status}
+                  onChange={(e) => handleStatusChange(a.id, e.target.value)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-full border border-gray-300 cursor-pointer focus:outline-none bg-white text-slate-700"
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                  ))}
+                </select>
+              ),
+            },
+          ],
+        }))}
+        actionOptions={actionOptions}
+        onAction={handleAction}
+        emptyMessage="No appointments found"
+      />
 
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title="Appointment Details" size="lg">
         {viewItem && (
@@ -153,6 +153,17 @@ const Appointments = () => {
           </div>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Appointment"
+        message="Are you sure you want to delete this appointment? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

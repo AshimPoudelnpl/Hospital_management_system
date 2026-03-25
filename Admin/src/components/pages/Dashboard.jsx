@@ -7,6 +7,7 @@ import { useGetDepartmentsQuery } from "../../Redux/features/departmentSlice";
 import { useGetDoctorsQuery } from "../../Redux/features/doctorSlice";
 import { useGetNoticesQuery } from "../../Redux/features/noticeSlice";
 import { useGetServicesQuery } from "../../Redux/features/servicesSlice";
+import { FaUserMd, FaFolder, FaPlus, FaCalendarAlt, FaBell, FaEnvelope, FaHospital, FaClock } from "react-icons/fa";
 
 const PageCard = ({ className = "", children }) => (
   <section className={`rounded-[28px] border border-slate-200 bg-white/95 p-5 shadow-sm ${className}`}>
@@ -75,66 +76,42 @@ const Dashboard = () => {
         value: doctors?.length,
         path: "/admin/doctors",
         accent: "bg-sky-100 text-sky-600",
-        icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2a5 5 0 0 1 5 5c0 1.55-.7 2.94-1.8 3.85A7.98 7.98 0 0 1 20 18v1a1 1 0 1 1-2 0v-1a6 6 0 0 0-12 0v1a1 1 0 1 1-2 0v-1a7.98 7.98 0 0 1 4.8-7.15A4.98 4.98 0 0 1 7 7a5 5 0 0 1 5-5Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
-          </svg>
-        ),
+        icon: <FaUserMd className="h-5 w-5" />,
       },
       {
         label: "Departments",
         value: departments?.length,
         path: "/admin/departments",
         accent: "bg-violet-100 text-violet-600",
-        icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9.41a2 2 0 0 0-.59-1.41l-4.41-4.41A2 2 0 0 0 15.59 3H4Zm10 1.5V9h4.5" />
-          </svg>
-        ),
+        icon: <FaFolder className="h-5 w-5" />,
       },
       {
         label: "Services",
         value: services?.length,
         path: "/admin/services",
         accent: "bg-emerald-100 text-emerald-600",
-        icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 11h-6V5a1 1 0 1 0-2 0v6H5a1 1 0 1 0 0 2h6v6a1 1 0 1 0 2 0v-6h6a1 1 0 1 0 0-2Z" />
-          </svg>
-        ),
+        icon: <FaPlus className="h-5 w-5" />,
       },
       {
         label: "Appointments",
         value: appointments?.length,
         path: "/admin/appointments",
         accent: "bg-amber-100 text-amber-600",
-        icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm12 8H5v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7Z" />
-          </svg>
-        ),
+        icon: <FaCalendarAlt className="h-5 w-5" />,
       },
       {
         label: "Notices",
         value: notices?.length,
         path: "/admin/notices",
         accent: "bg-rose-100 text-rose-600",
-        icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2a7 7 0 0 0-7 7v3.59l-.7.7A1 1 0 0 0 5 15h14a1 1 0 0 0 .7-1.71l-.7-.7V9a7 7 0 0 0-7-7Zm0 20a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 22Z" />
-          </svg>
-        ),
+        icon: <FaBell className="h-5 w-5" />,
       },
       {
         label: "Contacts",
         value: contacts?.length,
         path: "/admin/contacts",
         accent: "bg-cyan-100 text-cyan-600",
-        icon: (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4 4h16a2 2 0 0 1 2 2v.59l-10 6.25L2 6.59V6a2 2 0 0 1 2-2Zm18 4.76-9.47 5.92a1 1 0 0 1-1.06 0L2 8.76V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.76Z" />
-          </svg>
-        ),
+        icon: <FaEnvelope className="h-5 w-5" />,
       },
     ],
     [appointments?.length, contacts?.length, departments?.length, doctors?.length, notices?.length, services?.length]
@@ -263,9 +240,7 @@ const Dashboard = () => {
                         className="rounded-[22px] border border-slate-200 bg-slate-50 p-4"
                       >
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2 4 6v6c0 5 3.4 9.74 8 11 4.6-1.26 8-6 8-11V6l-8-4Zm1 6h3v2h-3v3h-2v-3H8V8h3V5h2v3Z" />
-                          </svg>
+                          <FaHospital className="h-5 w-5" />
                         </div>
                         <p className="mt-3 line-clamp-1 text-sm font-semibold text-slate-800">
                           {department.name || department.department_name || `Department ${index + 1}`}
@@ -353,9 +328,7 @@ const Dashboard = () => {
                   <p className="text-sm text-slate-500">Live appointment distribution.</p>
                 </div>
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 5v5.59l3.7 3.7-1.4 1.41L11 13V7Z" />
-                  </svg>
+                  <FaClock className="h-5 w-5" />
                 </div>
               </div>
 

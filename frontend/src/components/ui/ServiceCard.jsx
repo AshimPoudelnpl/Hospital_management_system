@@ -14,14 +14,14 @@ const ServiceCard = ({ service, onAction }) => {
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition duration-300 text-center relative min-h-[280px] flex flex-col items-center">
-      {/* Icon or Image */}
-      {service.icon ? (
+      {/* Image or Icon */}
+      {service.image ? (
+        <div className="w-full h-40 mb-4 rounded-lg overflow-hidden">
+          <img src={service.image} alt={service.title} className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+        </div>
+      ) : service.icon ? (
         <div className="w-16 h-16 mb-4 bg-[#1b10e6] rounded-full flex items-center justify-center">
           <span className="text-2xl text-white">{service.icon}</span>
-        </div>
-      ) : service.image ? (
-        <div className="w-full h-40 mb-4 rounded-lg overflow-hidden">
-          <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
         </div>
       ) : null}
 

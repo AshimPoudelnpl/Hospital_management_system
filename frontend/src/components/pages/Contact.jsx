@@ -16,8 +16,9 @@ const Contact = () => {
       await sendContact(form).unwrap();
       toast.success("Message sent successfully!");
       setForm({ name: "", email: "", phone: "", message: "" });
-    } catch {
-      toast.error("Failed to send message. Please try again.");
+    } catch (error) {
+      const errorMessage = error?.data?.message || "Failed to send message. Please try again.";
+      toast.error(errorMessage);
     }
   };
 

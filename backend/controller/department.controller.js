@@ -4,10 +4,16 @@ import { removeImage } from "../utils/removeImg.js";
 export const createDepartment = async (req, res, next) => {
   try {
     const { name, description, head_doctor, services } = req.body;
-    console.log(typeof req.body.services);
-    console.log(req.body.services);
     const image = req.file ? req.file.path : null;
     if (!name) return res.status(400).json({ message: "Name is required" });
+    
+    const [existing] = await db.execute(
+      "SELECT id FROM departments WHERE name = ?",
+      [name]
+    );
+    if (existing.length > 0)
+      return res.status(400).json({ message: "Department name already exists" });
+    
     const [result] = await db.execute(
       "INSERT INTO departments (name, description, image, head_doctor) VALUES (?, ?, ?, ?)",
       [name, description, image, head_doctor],
@@ -30,9 +36,30 @@ export const createDepartment = async (req, res, next) => {
 
 export const getAllDepartments = async (req, res, next) => {
   try {
-    const [departments] = await db.execute(
-      "SELECT * FROM departments ORDER BY created_at DESC",
-    );
+    const { search, page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = (pageNum - 1) * pageSize;
+
+    let query = `SELECT * FROM departments`;
+    let countQuery = `SELECT COUNT(*) as total FROM departments`;
+    const params = [];
+    const countParams = [];
+
+    if (search) {
+      const searchTerm = `%${search}%`;
+      query += ` WHERE name LIKE ? OR description LIKE ?`;
+      countQuery += ` WHERE name LIKE ? OR description LIKE ?`;
+      params.push(searchTerm, searchTerm);
+      countParams.push(searchTerm, searchTerm);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
+
+    const [departments] = await db.execute(query, params);
+    const [countResult] = await db.execute(countQuery, countParams);
+    const total = countResult[0].total;
+
     for (const dept of departments) {
       const [services] = await db.execute(
         "SELECT * FROM department_services WHERE department_id = ?",
@@ -40,7 +67,16 @@ export const getAllDepartments = async (req, res, next) => {
       );
       dept.services = services;
     }
-    res.status(200).json(departments);
+
+    res.status(200).json({
+      data: departments,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: pageSize,
+        pages: Math.ceil(total / pageSize),
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -72,6 +108,16 @@ export const updateDepartment = async (req, res, next) => {
     );
     if (existing.length === 0)
       return res.status(404).json({ message: "Department not found" });
+    
+    if (name && name !== existing[0].name) {
+      const [duplicate] = await db.execute(
+        "SELECT id FROM departments WHERE name = ? AND id != ?",
+        [name, req.params.id]
+      );
+      if (duplicate.length > 0)
+        return res.status(400).json({ message: "Department name already exists" });
+    }
+    
     const image = req.file ? req.file.path : existing[0].image;
     if (req.file && existing[0].image) removeImage(existing[0].image);
     await db.execute(

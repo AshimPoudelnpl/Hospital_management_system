@@ -28,6 +28,11 @@ const Services = () => {
 
   const services = servicesData || [];
 
+  const servicesWithImages = services.map((s) => ({
+    ...s,
+    image: s.image ? `${import.meta.env.VITE_BACKEND_URL}/${s.image}` : null,
+  }));
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4">
@@ -40,9 +45,9 @@ const Services = () => {
         </div>
 
         {/* Grid */}
-        {services.length > 0 ? (
+        {servicesWithImages.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
+            {servicesWithImages.map((service, index) => (
               <ServiceCard key={service.id || index} service={service} />
             ))}
           </div>

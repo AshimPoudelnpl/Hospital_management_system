@@ -7,10 +7,13 @@ import {
 } from "../../Redux/features/doctorSlice";
 import { useGetDepartmentsQuery } from "../../Redux/features/departmentSlice";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
 import FormSelect from "../ui/FormSelect";
+import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
@@ -28,6 +31,8 @@ const EMPTY = {
 
 const Doctors = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [isViewing, setIsViewing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -38,9 +43,11 @@ const Doctors = () => {
 
   const { data: doctors = [], isLoading } = useGetDoctorsQuery();
   const { data: departments = [] } = useGetDepartmentsQuery();
-  const [addDoctor] = useAddDoctorMutation();
-  const [updateDoctor] = useUpdateDoctorMutation();
-  const [deleteDoctor] = useDeleteDoctorMutation();
+  const [addDoctor, { isLoading: isAddingDoctor }] = useAddDoctorMutation();
+  const [updateDoctor, { isLoading: isUpdatingDoctor }] = useUpdateDoctorMutation();
+  const [deleteDoctor, { isLoading: isDeleting }] = useDeleteDoctorMutation();
+
+  const isSubmitting = isAddingDoctor || isUpdatingDoctor;
 
   const filtered = doctors.filter(
     (d) =>
@@ -79,12 +86,17 @@ const Doctors = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this doctor?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteDoctor(id).unwrap();
+      await deleteDoctor(confirmAction.id).unwrap();
       toast.success("Doctor deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
@@ -104,8 +116,8 @@ const Doctors = () => {
         toast.success("Doctor updated");
       }
       setIsModalOpen(false);
-    } catch {
-      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    } catch (error) {
+      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
     }
   };
 
@@ -141,77 +153,32 @@ const Doctors = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-slate-100">
-            <tr>
-              {[
-                "#",
-                "Image",
-                "Name",
-                "Specialty",
-                "Experience",
-                "Department",
-                "Action",
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-sm font-semibold text-slate-700"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="px-4 py-4 text-center text-gray-400">
-                  No doctors found
-                </td>
-              </tr>
-            ) : (
-              filtered.map((doc, i) => (
-                <tr key={doc.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
-                  <td className="px-4 py-3">
-                    {doc.image ? (
-                      <img
-                        src={`/${doc.image}`}
-                        alt={doc.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                        {doc.name[0]}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium text-slate-700">
-                    {doc.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
-                    {doc.specialty}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
-                    {doc.experience || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
-                    {doc.department_name || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <Select
-                      options={actionOptions}
-                      placeholder="Action"
-                      onChange={(e) => handleAction(e, doc)}
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        headers={["#", "Image", "Name", "Specialty", "Experience", "Department", "Display Order", "Action"]}
+        rows={filtered.map((doc, i) => ({
+          id: doc.id,
+          cells: [
+            { content: i + 1, className: "text-slate-600" },
+            {
+              content: doc.image ? (
+                <img src={`/${doc.image}`} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                  {doc.name[0]}
+                </div>
+              ),
+            },
+            { content: doc.name, className: "font-medium text-slate-700" },
+            { content: doc.specialty, className: "text-slate-600" },
+            { content: doc.experience || "—", className: "text-slate-600" },
+            { content: doc.department_name || "—", className: "text-slate-600" },
+            { content: doc.display_order || "—", className: "font-medium text-slate-600" },
+          ],
+        }))}
+        actionOptions={actionOptions}
+        onAction={handleAction}
+        emptyMessage="No doctors found"
+      />
 
       <Modal
         show={isModalOpen}
@@ -235,6 +202,7 @@ const Doctors = () => {
               ["Specialty", viewItem?.specialty],
               ["Experience", viewItem?.experience],
               ["Department", viewItem?.department_name],
+              ["Display Order", viewItem?.display_order],
               ["Description", viewItem?.description],
             ].map(([label, val]) => (
               <div key={label}>
@@ -297,17 +265,10 @@ const Doctors = () => {
               }
               options={departments.map((d) => ({ id: d.id, name: d.name }))}
             />
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">
-                Doctor Image
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files[0])}
-                className="w-full text-sm"
-              />
-            </div>
+            <FormImage
+              label="Doctor Image"
+              onChange={(e) => setImageFile(e.target.files[0])}
+            />
             <div className="flex justify-end gap-2 pt-1">
               <Button
                 type="button"
@@ -316,13 +277,24 @@ const Doctors = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary">
+              <Button type="submit" variant="primary" isLoading={isSubmitting} loadingText={isAdding ? "Adding..." : "Updating..."}>
                 {isAdding ? "Add" : "Update"}
               </Button>
             </div>
           </form>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Doctor"
+        message="Are you sure you want to delete this doctor? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

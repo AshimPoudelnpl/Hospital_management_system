@@ -6,30 +6,36 @@ import {
   useDeleteNoticeMutation,
 } from "../../Redux/features/noticeSlice";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
+import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
 import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
-const EMPTY = { title: "", content: "" };
+const EMPTY = { title: "", content: "", image: null };
 
 const Notices = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [isViewing, setIsViewing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [formData, setFormData] = useState(EMPTY);
+  const [imageFile, setImageFile] = useState(null);
   const [search, setSearch] = useState("");
 
   const { data: notices = [], isLoading } = useGetNoticesQuery();
   const [addNotice] = useAddNoticeMutation();
   const [updateNotice] = useUpdateNoticeMutation();
-  const [deleteNotice] = useDeleteNoticeMutation();
+  const [deleteNotice, { isLoading: isDeleting }] = useDeleteNoticeMutation();
 
   const filtered = notices.filter((n) =>
     n.title.toLowerCase().includes(search.toLowerCase())
@@ -39,6 +45,7 @@ const Notices = () => {
     setIsAdding(true);
     setIsViewing(false);
     setFormData(EMPTY);
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -46,7 +53,8 @@ const Notices = () => {
     setIsAdding(false);
     setIsViewing(false);
     setEditId(notice.id);
-    setFormData({ title: notice.title, content: notice.content });
+    setFormData({ title: notice.title, content: notice.content, image: notice.image });
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -57,28 +65,37 @@ const Notices = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this notice?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteNotice(id).unwrap();
+      await deleteNotice(confirmAction.id).unwrap();
       toast.success("Notice deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const fd = new FormData();
+    fd.append("title", formData.title);
+    fd.append("content", formData.content);
+    if (imageFile) fd.append("image", imageFile);
     try {
       if (isAdding) {
-        await addNotice(formData).unwrap();
+        await addNotice(fd).unwrap();
         toast.success("Notice added");
       } else {
-        await updateNotice({ id: editId, ...formData }).unwrap();
+        await updateNotice({ id: editId, body: fd }).unwrap();
         toast.success("Notice updated");
       }
       setIsModalOpen(false);
-    } catch {
-      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    } catch (error) {
+      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
     }
   };
 
@@ -108,37 +125,38 @@ const Notices = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-slate-100">
-            <tr>
-              {["#", "Title", "Content", "Created By", "Date", "Action"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-slate-700">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan="6" className="px-4 py-4 text-center text-gray-400">No notices found</td></tr>
-            ) : filtered.map((notice, i) => (
-              <tr key={notice.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
-                <td className="px-4 py-3 text-sm font-medium text-slate-700">{notice.title}</td>
-                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{notice.content}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{notice.created_by_name || "—"}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{new Date(notice.created_at).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-sm">
-                  <Select options={actionOptions} placeholder="Action" onChange={(e) => handleAction(e, notice)} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        headers={["#", "Image", "Title", "Content", "Created By", "Date", "Action"]}
+        rows={filtered.map((notice, i) => ({
+          id: notice.id,
+          cells: [
+            { content: i + 1, className: "text-slate-600" },
+            {
+              content: notice.image ? (
+                <img src={`/${notice.image}`} alt={notice.title} className="w-10 h-10 rounded object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
+              ),
+            },
+            { content: notice.title, className: "font-medium text-slate-700" },
+            { content: notice.content, className: "text-slate-500 max-w-xs truncate" },
+            { content: notice.created_by_name || "—", className: "text-slate-600" },
+            { content: new Date(notice.created_at).toLocaleDateString(), className: "text-slate-600" },
+          ],
+        }))}
+        actionOptions={actionOptions}
+        onAction={handleAction}
+        emptyMessage="No notices found"
+      />
 
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Notice Details" : isAdding ? "Add Notice" : "Edit Notice"} size="lg">
         {isViewing ? (
           <div className="space-y-3">
+            {viewItem?.image && (
+              <div>
+                <img src={`/${viewItem.image}`} alt={viewItem.title} className="w-full h-48 rounded object-cover mb-3" />
+              </div>
+            )}
             <div>
               <p className="text-xs font-medium text-gray-500">Title</p>
               <p className="text-sm font-semibold text-slate-800">{viewItem?.title}</p>
@@ -163,6 +181,11 @@ const Notices = () => {
           <form onSubmit={handleSubmit} className="space-y-3">
             <FormInput placeholder="Title *" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
             <FormTextarea placeholder="Content *" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={5} required />
+            <FormImage
+              label="Notice Image"
+              onChange={(e) => setImageFile(e.target.files[0])}
+              currentImage={formData.image && !imageFile ? formData.image : null}
+            />
             <div className="flex justify-end gap-2 pt-1">
               <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
               <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
@@ -170,6 +193,17 @@ const Notices = () => {
           </form>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Notice"
+        message="Are you sure you want to delete this notice? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

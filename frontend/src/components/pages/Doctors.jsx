@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
 import DoctorCard from "../ui/DoctorCard";
 import CTASection from "../ui/CTASection";
-import { FaUserMd } from "react-icons/fa";
+import { FaUserMd, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Doctors = () => {
   const navigate = useNavigate();
-  const { data: doctorsData, isLoading, error } = useGetDoctorsQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data: doctorsData, isLoading, error } = useGetDoctorsQuery({ page: currentPage, limit: 8 });
 
-  if (isLoading) return <Skeleton variant="grid" count={3} />;
+  if (isLoading) return <Skeleton variant="grid" count={8} />;
 
   if (error)
     return (
@@ -26,7 +27,10 @@ const Doctors = () => {
       </div>
     );
 
-  const doctors = doctorsData || [];
+  const doctors = doctorsData?.data || [];
+  const pagination = doctorsData?.pagination || {};
+
+
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
@@ -41,11 +45,50 @@ const Doctors = () => {
 
         {/* Grid */}
         {doctors.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {doctors.map((doctor, index) => (
-              <DoctorCard key={doctor.id || index} doctor={doctor} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {doctors.map((doctor, index) => (
+                <DoctorCard key={doctor.id || index} doctor={doctor} />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {pagination.pages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-12">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <FaChevronLeft size={18} />
+                </button>
+
+                <div className="flex gap-1">
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg font-medium transition ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
+                  disabled={currentPage === pagination.pages}
+                  className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  <FaChevronRight size={18} />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-16 text-gray-500">
             <FaUserMd className="text-5xl mx-auto mb-4 text-gray-300" />
@@ -54,7 +97,7 @@ const Doctors = () => {
         )}
 
         {/* CTA */}
-        <div className="mt-16">
+        <div className="mt-20">
           <CTASection
             title="Looking for a Specialist?"
             description="Contact us to schedule an appointment with our expert doctors"

@@ -1,24 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useBookAppointmentMutation } from "@Redux/features/appointmentSlice.js";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import { useGetDepartmentsQuery } from "@Redux/features/departmentSlice.js";
+import { useSearchParams } from "react-router-dom";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
 import { toast } from "react-toastify";
 
-const initialForm = {
-  patient_name: "",
-  patient_email: "",
-  patient_phone: "",
-  department_id: "",
-  doctor_id: "",
-  appointment_date: "",
-  appointment_time: "",
-  message: "",
-};
-
 const BookAppointment = () => {
-  const [form, setForm] = useState(initialForm);
+  const [searchParams] = useSearchParams();
+  const departmentIdParam = searchParams.get("department_id");
+  const doctorIdParam = searchParams.get("doctor_id");
+
+  const [form, setForm] = useState({
+    patient_name: "",
+    patient_email: "",
+    patient_phone: "",
+    department_id: departmentIdParam || "",
+    doctor_id: doctorIdParam || "",
+    appointment_date: "",
+    appointment_time: "",
+    message: "",
+  });
+
+  useEffect(() => {
+    if (departmentIdParam || doctorIdParam) {
+      setForm((prev) => ({
+        ...prev,
+        department_id: departmentIdParam || prev.department_id,
+        doctor_id: doctorIdParam || prev.doctor_id,
+      }));
+    }
+  }, [departmentIdParam, doctorIdParam]);
 
   const { data: departments, isLoading: deptLoading } =
     useGetDepartmentsQuery();
@@ -45,7 +58,16 @@ const BookAppointment = () => {
     try {
       await bookAppointment(form).unwrap();
       toast.success("Appointment booked successfully!");
-      setForm(initialForm);
+      setForm({
+        patient_name: "",
+        patient_email: "",
+        patient_phone: "",
+        department_id: departmentIdParam || "",
+        doctor_id: doctorIdParam || "",
+        appointment_date: "",
+        appointment_time: "",
+        message: "",
+      });
     } catch (err) {
       const msg =
         err?.data?.message || "Failed to book appointment. Please try again.";

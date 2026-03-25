@@ -95,14 +95,53 @@ export const createAppointment = async (req, res, next) => {
 
 export const getAllAppointments = async (req, res, next) => {
   try {
-    const [rows] = await db.execute(
-      `SELECT a.*, d.name AS doctor_name, dep.name AS department_name 
+    const { search, status, page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = (pageNum - 1) * pageSize;
+
+    let query = `SELECT a.*, d.name AS doctor_name, dep.name AS department_name 
        FROM appointments a 
        LEFT JOIN doctors d ON a.doctor_id = d.id 
-       LEFT JOIN departments dep ON a.department_id = dep.id 
-       ORDER BY a.created_at DESC`,
-    );
-    res.status(200).json(rows);
+       LEFT JOIN departments dep ON a.department_id = dep.id`;
+    let countQuery = `SELECT COUNT(*) as total FROM appointments a`;
+    const params = [];
+    const countParams = [];
+
+    const conditions = [];
+    if (search) {
+      conditions.push(`(a.patient_name LIKE ? OR a.patient_email LIKE ?)`);
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm);
+      countParams.push(searchTerm, searchTerm);
+    }
+    if (status) {
+      conditions.push(`a.status = ?`);
+      params.push(status);
+      countParams.push(status);
+    }
+
+    if (conditions.length > 0) {
+      const whereClause = ` WHERE ${conditions.join(" AND ")}`;
+      query += whereClause;
+      countQuery += whereClause;
+    }
+
+    query += ` ORDER BY a.created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
+
+    const [rows] = await db.execute(query, params);
+    const [countResult] = await db.execute(countQuery, countParams);
+    const total = countResult[0].total;
+
+    res.status(200).json({
+      data: rows,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: pageSize,
+        pages: Math.ceil(total / pageSize),
+      },
+    });
   } catch (error) {
     next(error);
   }

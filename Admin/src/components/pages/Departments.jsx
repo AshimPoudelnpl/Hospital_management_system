@@ -6,9 +6,12 @@ import {
   useDeleteDepartmentMutation,
 } from "../../Redux/features/departmentSlice";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
+import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
@@ -19,6 +22,8 @@ const EMPTY = { name: "", description: "", head_doctor: "" };
 
 const Departments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [isViewing, setIsViewing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -30,9 +35,9 @@ const Departments = () => {
   const [search, setSearch] = useState("");
 
   const { data: departments = [], isLoading } = useGetDepartmentsQuery();
-  const [addDepartment] = useAddDepartmentMutation();
-  const [updateDepartment] = useUpdateDepartmentMutation();
-  const [deleteDepartment] = useDeleteDepartmentMutation();
+  const [addDepartment, { isLoading: isAddingDept }] = useAddDepartmentMutation();
+  const [updateDepartment, { isLoading: isUpdatingDept }] = useUpdateDepartmentMutation();
+  const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
 
   const filtered = departments.filter((d) =>
     d.name.toLowerCase().includes(search.toLowerCase())
@@ -65,12 +70,17 @@ const Departments = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this department?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteDepartment(id).unwrap();
+      await deleteDepartment(confirmAction.id).unwrap();
       toast.success("Department deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
@@ -97,8 +107,8 @@ const Departments = () => {
         toast.success("Department updated");
       }
       setIsModalOpen(false);
-    } catch {
-      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    } catch (error) {
+      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
     }
   };
 
@@ -128,37 +138,30 @@ const Departments = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-slate-100">
-            <tr>
-              {["#", "Image", "Name", "Head Doctor", "Services", "Action"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-slate-700">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan="6" className="px-4 py-4 text-center text-gray-400">No departments found</td></tr>
-            ) : filtered.map((dept, i) => (
-              <tr key={dept.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
-                <td className="px-4 py-3">
-                  {dept.image
-                    ? <img src={`/${dept.image}`} alt={dept.name} className="w-10 h-10 rounded object-cover" />
-                    : <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-sm">{dept.name[0]}</div>}
-                </td>
-                <td className="px-4 py-3 text-sm font-medium text-slate-700">{dept.name}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{dept.head_doctor || "—"}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{dept.services?.length || 0}</td>
-                <td className="px-4 py-3 text-sm">
-                  <Select options={actionOptions} placeholder="Action" onChange={(e) => handleAction(e, dept)} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        headers={["#", "Image", "Name", "Head Doctor", "Services", "Action"]}
+        rows={filtered.map((dept, i) => ({
+          id: dept.id,
+          cells: [
+            { content: i + 1, className: "text-slate-600" },
+            {
+              content: dept.image ? (
+                <img src={`/${dept.image}`} alt={dept.name} className="w-10 h-10 rounded object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-sm">
+                  {dept.name[0]}
+                </div>
+              ),
+            },
+            { content: dept.name, className: "font-medium text-slate-700" },
+            { content: dept.head_doctor || "—", className: "text-slate-600" },
+            { content: dept.services?.length || 0, className: "text-slate-600" },
+          ],
+        }))}
+        actionOptions={actionOptions}
+        onAction={handleAction}
+        emptyMessage="No departments found"
+      />
 
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Department Details" : isAdding ? "Add Department" : "Edit Department"} size="lg">
         {isViewing ? (
@@ -202,17 +205,28 @@ const Departments = () => {
                 ))}
               </div>
             </div>
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Department Image</label>
-              <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full text-sm" />
-            </div>
+            <FormImage
+              label="Department Image"
+              onChange={(e) => setImageFile(e.target.files[0])}
+            />
             <div className="flex justify-end gap-2 pt-1">
               <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
-              <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
+              <Button type="submit" variant="primary" isLoading={isAddingDept || isUpdatingDept} loadingText={isAdding ? "Adding..." : "Updating..."}>{isAdding ? "Add" : "Update"}</Button>
             </div>
           </form>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Department"
+        message="Are you sure you want to delete this department? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

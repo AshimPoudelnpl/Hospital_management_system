@@ -76,13 +76,13 @@ const Footer = () => {
         <div className="space-y-6">
           <h6 className="text-sm text-white font-medium">CONTACT INFO</h6>
           <ul className="space-y-3">
-            <li className="text-[13px] text-gray-400">📍 Kathmandu, Nepal</li>
-            <li className="text-[13px] text-gray-400">📞 +977-1-XXXXXXX</li>
+            <li className="text-[13px] text-gray-400">Kathmandu, Nepal</li>
+            <li className="text-[13px] text-gray-400">+977-1-XXXXXXX</li>
             <li className="text-[13px] text-gray-400">
-              ✉️ info@swastikhospital.com
+              info@swastikhospital.com
             </li>
             <li className="text-[13px] text-gray-400">
-              🕒 24/7 Emergency Services
+              24/7 Emergency Services
             </li>
           </ul>
         </div>

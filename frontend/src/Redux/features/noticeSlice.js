@@ -3,7 +3,8 @@ import { indexSlice } from "./indexSlice";
 export const noticeAPIs = indexSlice.injectEndpoints({
   endpoints: (builder) => ({
     getNotices: builder.query({
-      query: () => ({ url: "/notices", method: "GET" }),
+      query: () => ({ url: "/notices", method: "GET", params: { limit: 100 } }),
+      transformResponse: (response) => response.data ?? response,
       providesTags: ["notices"],
     }),
     getNoticeById: builder.query({

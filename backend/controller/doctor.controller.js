@@ -16,6 +16,16 @@ export const createDoctor = async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "Name and specialty are required" });
+    
+    if (display_order) {
+      const [existing] = await db.execute(
+        "SELECT id FROM doctors WHERE display_order = ?",
+        [display_order]
+      );
+      if (existing.length > 0)
+        return res.status(400).json({ message: "Display order already exists" });
+    }
+    
     const [result] = await db.execute(
       "INSERT INTO doctors (name, specialty, experience, description, image, display_order, department_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
@@ -24,7 +34,7 @@ export const createDoctor = async (req, res, next) => {
         experience,
         description,
         image,
-        display_order ,
+        display_order,
         department_id ? parseInt(department_id) : null,
       ],
     );
@@ -36,18 +46,52 @@ export const createDoctor = async (req, res, next) => {
 
 export const getAllDoctors = async (req, res, next) => {
   try {
-    const { department_id } = req.query;
+    const { department_id, search, page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = (pageNum - 1) * pageSize;
+
     let query = `SELECT d.*, dep.name AS department_name 
        FROM doctors d 
        LEFT JOIN departments dep ON d.department_id = dep.id`;
+    let countQuery = `SELECT COUNT(*) as total FROM doctors d`;
     const params = [];
+    const countParams = [];
+
+    const conditions = [];
     if (department_id) {
-      query += ` WHERE d.department_id = ?`;
+      conditions.push(`d.department_id = ?`);
       params.push(parseInt(department_id));
+      countParams.push(parseInt(department_id));
     }
-    query += ` ORDER BY d.display_order ASC, d.created_at DESC`;
+    if (search) {
+      conditions.push(`(d.name LIKE ? OR d.specialty LIKE ?)`);
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm);
+      countParams.push(searchTerm, searchTerm);
+    }
+
+    if (conditions.length > 0) {
+      const whereClause = ` WHERE ${conditions.join(" AND ")}`;
+      query += whereClause;
+      countQuery += whereClause;
+    }
+
+    query += ` ORDER BY d.display_order ASC, d.created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
+
     const [rows] = await db.execute(query, params);
-    res.status(200).json(rows);
+    const [countResult] = await db.execute(countQuery, countParams);
+    const total = countResult[0].total;
+
+    res.status(200).json({
+      data: rows,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: pageSize,
+        pages: Math.ceil(total / pageSize),
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -85,6 +129,16 @@ export const updateDoctor = async (req, res, next) => {
     ]);
     if (existing.length === 0)
       return res.status(404).json({ message: "Doctor not found" });
+    
+    if (display_order && display_order !== existing[0].display_order) {
+      const [duplicate] = await db.execute(
+        "SELECT id FROM doctors WHERE display_order = ? AND id != ?",
+        [display_order, req.params.id]
+      );
+      if (duplicate.length > 0)
+        return res.status(400).json({ message: "Display order already exists" });
+    }
+    
     const image = req.file ? req.file.path : existing[0].image;
     if (req.file && existing[0].image) removeImage(existing[0].image);
     await db.execute(

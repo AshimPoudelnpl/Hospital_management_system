@@ -21,6 +21,9 @@ const Login = () => {
     try {
       const res = await login(form).unwrap();
       dispatch(setCredentials({ user: res.user, token: res.token }));
+      // Save token to localStorage as backup
+      localStorage.setItem("authToken", res.token);
+      localStorage.setItem("authUser", JSON.stringify(res.user));
       navigate("/admin/dashboard");
     } catch (err) {
       toast.error(err?.data?.message || "Login failed");

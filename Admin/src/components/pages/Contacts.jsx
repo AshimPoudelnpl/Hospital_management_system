@@ -4,6 +4,8 @@ import {
   useDeleteContactMutation,
 } from "../../Redux/features/contactSlice";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import Select from "../ui/Select";
 import SearchBar from "../ui/SearchBar";
 import Loading from "../shared/Loading";
@@ -13,11 +15,13 @@ import { toast } from "react-toastify";
 
 const Contacts = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [search, setSearch] = useState("");
 
   const { data: contacts = [], isLoading } = useGetContactsQuery();
-  const [deleteContact] = useDeleteContactMutation();
+  const [deleteContact, { isLoading: isDeleting }] = useDeleteContactMutation();
 
   const filtered = contacts.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -26,12 +30,17 @@ const Contacts = () => {
   );
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this contact?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteContact(id).unwrap();
+      await deleteContact(confirmAction.id).unwrap();
       toast.success("Contact deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
@@ -58,34 +67,23 @@ const Contacts = () => {
         <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name, email, phone..." />
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-slate-100">
-            <tr>
-              {["#", "Name", "Email", "Phone", "Message", "Date", "Action"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-slate-700">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan="7" className="px-4 py-4 text-center text-gray-400">No contacts found</td></tr>
-            ) : filtered.map((c, i) => (
-              <tr key={c.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
-                <td className="px-4 py-3 text-sm font-medium text-slate-700">{c.name}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{c.email}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{c.phone}</td>
-                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{c.message}</td>
-                <td className="px-4 py-3 text-sm text-slate-600">{new Date(c.created_at).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-sm">
-                  <Select options={actionOptions} placeholder="Action" onChange={(e) => handleAction(e, c)} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        headers={["#", "Name", "Email", "Phone", "Message", "Date", "Action"]}
+        rows={filtered.map((c, i) => ({
+          id: c.id,
+          cells: [
+            { content: i + 1, className: "text-slate-600" },
+            { content: c.name, className: "font-medium text-slate-700" },
+            { content: c.email, className: "text-slate-600" },
+            { content: c.phone, className: "text-slate-600" },
+            { content: c.message, className: "text-slate-500 max-w-xs truncate" },
+            { content: new Date(c.created_at).toLocaleDateString(), className: "text-slate-600" },
+          ],
+        }))}
+        actionOptions={actionOptions}
+        onAction={handleAction}
+        emptyMessage="No contacts found"
+      />
 
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title="Contact Details" size="lg">
         {viewItem && (
@@ -108,6 +106,17 @@ const Contacts = () => {
           </div>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Contact"
+        message="Are you sure you want to delete this contact? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

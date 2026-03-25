@@ -3,7 +3,8 @@ import { indexSlice } from "./indexSlice";
 export const doctorAPIs = indexSlice.injectEndpoints({
   endpoints: (builder) => ({
     getDoctors: builder.query({
-      query: () => ({ url: "/doctors", method: "GET" }),
+      query: () => ({ url: "/doctors", method: "GET", params: { limit: 100 } }),
+      transformResponse: (response) => response.data ?? response,
       providesTags: ["doctors"],
     }),
     getDoctorById: builder.query({

@@ -10,7 +10,7 @@ CREATE TABLE users (
 -- 2. DEPARTMENTS
 CREATE TABLE departments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     image VARCHAR(255),
     head_doctor VARCHAR(100),
@@ -33,7 +33,7 @@ CREATE TABLE doctors (
     experience VARCHAR(50),
     description TEXT,
     image VARCHAR(255),
-    display_order INT,
+    display_order INT UNIQUE,
     department_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL
@@ -74,8 +74,8 @@ CREATE TABLE appointments (
 CREATE TABLE contacts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(20) NOT NULL UNIQUE,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -85,6 +85,7 @@ CREATE TABLE notices (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
+    image VARCHAR(255),
     created_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL

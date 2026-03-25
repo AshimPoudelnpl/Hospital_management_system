@@ -5,6 +5,8 @@ const Button = ({
   variant = "primary", 
   size = "md", 
   disabled = false,
+  isLoading = false,
+  loadingText = "Loading...",
   className = ""
 }) => {
   const baseClass = "rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed";
@@ -26,10 +28,10 @@ const Button = ({
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       className={`${baseClass} ${variants[variant]} ${sizes[size]} ${className}`}
     >
-      {children}
+      {isLoading ? loadingText : children}
     </button>
   );
 };

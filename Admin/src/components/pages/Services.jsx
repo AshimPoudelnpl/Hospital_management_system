@@ -6,9 +6,12 @@ import {
   useDeleteServiceMutation,
 } from "../../Redux/features/servicesSlice";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
+import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
@@ -19,6 +22,8 @@ const EMPTY = { title: "", description: "" };
 
 const Services = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [isViewing, setIsViewing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -30,7 +35,7 @@ const Services = () => {
   const { data: services = [], isLoading } = useGetServicesQuery();
   const [addService] = useAddServiceMutation();
   const [updateService] = useUpdateServiceMutation();
-  const [deleteService] = useDeleteServiceMutation();
+  const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
   const filtered = services.filter((s) =>
     s.title.toLowerCase().includes(search.toLowerCase())
@@ -60,12 +65,17 @@ const Services = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this service?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteService(id).unwrap();
+      await deleteService(confirmAction.id).unwrap();
       toast.success("Service deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
@@ -83,8 +93,8 @@ const Services = () => {
         toast.success("Service updated");
       }
       setIsModalOpen(false);
-    } catch {
-      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    } catch (error) {
+      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
     }
   };
 
@@ -114,36 +124,29 @@ const Services = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead className="bg-slate-100">
-            <tr>
-              {["#", "Image", "Title", "Description", "Action"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-slate-700">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan="5" className="px-4 py-4 text-center text-gray-400">No services found</td></tr>
-            ) : filtered.map((svc, i) => (
-              <tr key={svc.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
-                <td className="px-4 py-3">
-                  {svc.image
-                    ? <img src={`/${svc.image}`} alt={svc.title} className="w-10 h-10 rounded object-cover" />
-                    : <div className="w-10 h-10 rounded bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">{svc.title[0]}</div>}
-                </td>
-                <td className="px-4 py-3 text-sm font-medium text-slate-700">{svc.title}</td>
-                <td className="px-4 py-3 text-sm text-slate-500 max-w-xs truncate">{svc.description || "—"}</td>
-                <td className="px-4 py-3 text-sm">
-                  <Select options={actionOptions} placeholder="Action" onChange={(e) => handleAction(e, svc)} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        headers={["#", "Image", "Title", "Description", "Action"]}
+        rows={filtered.map((svc, i) => ({
+          id: svc.id,
+          cells: [
+            { content: i + 1, className: "text-slate-600" },
+            {
+              content: svc.image ? (
+                <img src={`/${svc.image}`} alt={svc.title} className="w-10 h-10 rounded object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">
+                  {svc.title[0]}
+                </div>
+              ),
+            },
+            { content: svc.title, className: "font-medium text-slate-700" },
+            { content: svc.description || "—", className: "text-slate-500 max-w-xs truncate" },
+          ],
+        }))}
+        actionOptions={actionOptions}
+        onAction={handleAction}
+        emptyMessage="No services found"
+      />
 
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Service Details" : isAdding ? "Add Service" : "Edit Service"} size="lg">
         {isViewing ? (
@@ -163,10 +166,10 @@ const Services = () => {
           <form onSubmit={handleSubmit} className="space-y-3">
             <FormInput placeholder="Title *" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
             <FormTextarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">Service Image</label>
-              <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full text-sm" />
-            </div>
+            <FormImage
+              label="Service Image"
+              onChange={(e) => setImageFile(e.target.files[0])}
+            />
             <div className="flex justify-end gap-2 pt-1">
               <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
               <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
@@ -174,6 +177,17 @@ const Services = () => {
           </form>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Service"
+        message="Are you sure you want to delete this service? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

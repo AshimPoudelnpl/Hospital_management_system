@@ -8,6 +8,7 @@ import {
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
 import Modal from "../ui/DetailsModal";
+import ConfirmModal from "../ui/ConfirmModal";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
@@ -23,9 +24,11 @@ const EMPTY = { name: "", rating: 5, text: "" };
 const Reviews = () => {
   const { data: reviews = [], isLoading } = useGetReviewsQuery();
   const [addReview] = useAddReviewMutation();
-  const [deleteReview] = useDeleteReviewMutation();
+  const [deleteReview, { isLoading: isDeleting }] = useDeleteReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
   const [isViewing, setIsViewing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -60,12 +63,17 @@ const Reviews = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this review?")) return;
+    setConfirmAction({ type: "delete", id });
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deleteReview(id).unwrap();
+      await deleteReview(confirmAction.id).unwrap();
       toast.success("Review deleted");
-    } catch {
-      toast.error("Failed to delete");
+      setIsConfirmOpen(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete");
     }
   };
 
@@ -80,8 +88,8 @@ const Reviews = () => {
         toast.success("Review updated");
       }
       setIsModalOpen(false);
-    } catch {
-      toast.error(isAdding ? "Failed to add" : "Failed to update");
+    } catch (error) {
+      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
     }
   };
 
@@ -308,6 +316,17 @@ const Reviews = () => {
           </form>
         )}
       </Modal>
+
+      <ConfirmModal
+        show={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Review"
+        message="Are you sure you want to delete this review? This action cannot be undone."
+        confirmText="Delete"
+        isLoading={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };
