@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
-import DoctorCard from "../ui/DoctorCard";
+import Card from "../shared/Card";
 import CTASection from "../ui/CTASection";
-import { FaUserMd, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaUserMd, FaChevronLeft, FaChevronRight, FaStethoscope, FaClock } from "react-icons/fa";
 
 const Doctors = () => {
   const navigate = useNavigate();
@@ -48,7 +48,34 @@ const Doctors = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {doctors.map((doctor, index) => (
-                <DoctorCard key={doctor.id || index} doctor={doctor} />
+                <Card
+                  key={doctor.id || index}
+                  image={doctor.image}
+                  title={doctor.name}
+                  subtitle={
+                    <span className="flex items-center gap-2">
+                      <FaStethoscope className="text-sm flex-shrink-0" />
+                      <span className="line-clamp-1">{doctor.specialty}</span>
+                    </span>
+                  }
+                  badge={
+                    doctor.experience && (
+                      <span className="flex items-center gap-2">
+                        <FaClock className="text-xs flex-shrink-0" />
+                        <span className="line-clamp-1">{doctor.experience} experience</span>
+                      </span>
+                    )
+                  }
+                  description={doctor.description}
+                  expandable={true}
+                  buttonText="Book Appointment"
+                  onButtonClick={() => {
+                    const params = new URLSearchParams();
+                    if (doctor.department_id) params.append("department_id", doctor.department_id);
+                    params.append("doctor_id", doctor.id);
+                    navigate(`/book-appointment?${params.toString()}`);
+                  }}
+                />
               ))}
             </div>
 

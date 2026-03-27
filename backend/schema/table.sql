@@ -84,6 +84,7 @@ CREATE TABLE contacts (
 CREATE TABLE notices (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
     content TEXT NOT NULL,
     image VARCHAR(255),
     created_by INT,

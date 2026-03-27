@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useBookAppointmentMutation } from "@Redux/features/appointmentSlice.js";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import { useGetDepartmentsQuery } from "@Redux/features/departmentSlice.js";
 import { useSearchParams } from "react-router-dom";
-import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
 import { toast } from "react-toastify";
 
@@ -33,12 +32,21 @@ const BookAppointment = () => {
     }
   }, [departmentIdParam, doctorIdParam]);
 
-  const { data: departments, isLoading: deptLoading } =
+  const { data: departmentsData, isLoading: deptLoading } =
     useGetDepartmentsQuery();
-  const { data: doctors, isLoading: docLoading } = useGetDoctorsQuery(form.department_id || undefined);
+  const { data: doctorsData, isLoading: docLoading } = useGetDoctorsQuery(
+    form.department_id
+      ? { department_id: form.department_id, limit: 100 }
+      : { limit: 100 },
+  );
   const [bookAppointment, { isLoading }] = useBookAppointmentMutation();
 
-  const filteredDoctors = doctors || [];
+  const departments = Array.isArray(departmentsData)
+    ? departmentsData
+    : departmentsData?.data || [];
+  const filteredDoctors = Array.isArray(doctorsData)
+    ? doctorsData
+    : doctorsData?.data || [];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -150,7 +158,7 @@ const BookAppointment = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 bg-white"
               >
                 <option value="">Select Department</option>
-                {(departments || []).map((dept) => (
+                {departments.map((dept) => (
                   <option key={dept.id} value={dept.id}>
                     {dept.name}
                   </option>

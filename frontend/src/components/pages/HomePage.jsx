@@ -4,11 +4,8 @@ import { useGetServicesQuery } from "@Redux/features/serviceSlice.js";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
 import { useGetReviewsQuery } from "@Redux/features/reviewSlice.js";
 import Skeleton from "../shared/Skeleton";
+import Card from "../shared/Card";
 import HeroSection from "../ui/HeroSection";
-import ServiceCard from "../ui/ServiceCard";
-import DoctorCard from "../ui/DoctorCard";
-import StatCard from "../ui/StatCard";
-import ReviewCard from "../ui/ReviewCard";
 import doctorImage from "../../assets/medium-shot-doctor-checking-blood-pressure-female-patient.jpg";
 import surgeonImage from "../../assets/ordinary-busy-day-surgeon.jpg";
 import doctor from "../../assets/9109683.png";
@@ -32,6 +29,7 @@ import {
   FaLightbulb,
   FaArrowRight,
   FaClock,
+  FaStar,
 } from "react-icons/fa";
 
 const fallbackReviews = [
@@ -130,7 +128,6 @@ const Home = () => {
   ).map((s) => ({
     ...s,
     icon: s.icon || <FaHeartbeat />,
-    image: s.image ? `${import.meta.env.VITE_BACKEND_URL}/${s.image}` : null,
   }));
 
   const doctors = (doctorsData?.data || []).slice(0, 4);
@@ -163,26 +160,34 @@ const Home = () => {
       {/* Statistics */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid md:grid-cols-4 gap-6">
-          <StatCard
-            icon={<FaUserMd />}
-            value="50+"
-            label="Medical Professionals"
-          />
-          <StatCard
-            icon={<FaAmbulance />}
-            value="24/7"
-            label="Emergency Care"
-          />
-          <StatCard
-            icon={<FaHospital />}
-            value="Modern"
-            label="Facilities & Equipments"
-          />
-          <StatCard
-            icon={<FaBriefcaseMedical />}
-            value="Expert"
-            label="Medical Consulting"
-          />
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <div className="text-4xl text-blue-600 mb-3 flex justify-center">
+              <FaUserMd />
+            </div>
+            <p className="text-3xl font-bold text-blue-900 mb-1">50+</p>
+            <p className="text-gray-600 text-sm">Medical Professionals</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <div className="text-4xl text-blue-600 mb-3 flex justify-center">
+              <FaAmbulance />
+            </div>
+            <p className="text-3xl font-bold text-blue-900 mb-1">24/7</p>
+            <p className="text-gray-600 text-sm">Emergency Care</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <div className="text-4xl text-blue-600 mb-3 flex justify-center">
+              <FaHospital />
+            </div>
+            <p className="text-3xl font-bold text-blue-900 mb-1">Modern</p>
+            <p className="text-gray-600 text-sm">Facilities & Equipments</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <div className="text-4xl text-blue-600 mb-3 flex justify-center">
+              <FaBriefcaseMedical />
+            </div>
+            <p className="text-3xl font-bold text-blue-900 mb-1">Expert</p>
+            <p className="text-gray-600 text-sm">Medical Consulting</p>
+          </div>
         </div>
       </div>
 
@@ -373,9 +378,20 @@ const Home = () => {
             Our Services
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <ServiceCard key={service.id || index} service={service} />
-            ))}
+            {services.map((service, index) => {
+              const IconComponent = service.icon ? () => service.icon : null;
+              return (
+                <Card
+                  key={service.id || index}
+                  image={service.image}
+                  title={service.title}
+                  description={service.description}
+                  icon={IconComponent}
+                  buttonText="Book Appointment"
+                  onButtonClick={() => navigate("/book-appointment")}
+                />
+              );
+            })}
           </div>
           <button
             onClick={() => navigate("/services")}
@@ -401,7 +417,34 @@ const Home = () => {
           {doctors.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {doctors.map((doc, index) => (
-                <DoctorCard key={doc.id || index} doctor={doc} />
+                <Card
+                  key={doc.id || index}
+                  image={doc.image}
+                  title={doc.name}
+                  subtitle={
+                    <span className="flex items-center gap-2">
+                      <FaStethoscope className="text-sm flex-shrink-0" />
+                      <span className="line-clamp-1">{doc.specialty}</span>
+                    </span>
+                  }
+                  badge={
+                    doc.experience && (
+                      <span className="flex items-center gap-2">
+                        <FaClock className="text-xs flex-shrink-0" />
+                        <span className="line-clamp-1">{doc.experience} experience</span>
+                      </span>
+                    )
+                  }
+                  description={doc.description}
+                  expandable={true}
+                  buttonText="Book Appointment"
+                  onButtonClick={() => {
+                    const params = new URLSearchParams();
+                    if (doc.department_id) params.append("department_id", doc.department_id);
+                    params.append("doctor_id", doc.id);
+                    navigate(`/book-appointment?${params.toString()}`);
+                  }}
+                />
               ))}
             </div>
           ) : (
@@ -474,7 +517,18 @@ const Home = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {reviews.map((review, i) => (
-              <ReviewCard key={review.id || i} review={review} />
+              <div key={review.id || i} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+                <div className="flex items-center gap-1 text-yellow-400 mb-3">
+                  {[...Array(review.rating || 5)].map((_, idx) => (
+                    <FaStar key={idx} />
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm mb-4 italic">"{review.text}"</p>
+                <div>
+                  <p className="font-bold text-blue-900">{review.name}</p>
+                  <p className="text-sm text-gray-500">{review.role}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>

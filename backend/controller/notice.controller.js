@@ -1,18 +1,23 @@
 import db from "../config/db.js";
 import fs from "fs";
+import { get } from "http";
 import path from "path";
+import slugify from "slugify";
 
 export const createNotice = async (req, res, next) => {
   try {
     const { title, content } = req.body;
     if (!title || !content)
-      return res.status(400).json({ message: "Title and content are required" });
-    
+      return res
+        .status(400)
+        .json({ message: "Title and content are required" });
+
+    const slug = slugify(title, { lower: true, strict: true });
     const image = req.file ? `uploads/notices/${req.file.filename}` : null;
-    
+
     const [result] = await db.execute(
-      "INSERT INTO notices (title, content, image, created_by) VALUES (?, ?, ?, ?)",
-      [title, content, image, req.user.id]
+      "INSERT INTO notices (title, slug, content, image, created_by) VALUES (?, ?, ?, ?, ?)",
+      [title, slug, content, image, req.user.id],
     );
     res.status(201).json({ message: "Notice created", id: result.insertId });
   } catch (error) {
@@ -69,9 +74,23 @@ export const getNoticeById = async (req, res, next) => {
        FROM notices n 
        LEFT JOIN users u ON n.created_by = u.id 
        WHERE n.id = ?`,
-      [req.params.id]
+      [req.params.id],
     );
-    if (rows.length === 0) return res.status(404).json({ message: "Notice not found" });
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Notice not found" });
+    res.status(200).json(rows[0]);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNoticeBySlug = async (req, res, next) => {
+  try {
+    const [rows] = await db.execute(`select * from notices where slug = ?`, [
+      req.params.slug,
+    ]);
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Notice not found" });
     res.status(200).json(rows[0]);
   } catch (error) {
     next(error);
@@ -81,9 +100,15 @@ export const getNoticeById = async (req, res, next) => {
 export const updateNotice = async (req, res, next) => {
   try {
     const { title, content } = req.body;
-    const [existing] = await db.execute("SELECT * FROM notices WHERE id = ?", [req.params.id]);
-    if (existing.length === 0) return res.status(404).json({ message: "Notice not found" });
-    
+    const [existing] = await db.execute("SELECT * FROM notices WHERE id = ?", [
+      req.params.id,
+    ]);
+    if (existing.length === 0)
+      return res.status(404).json({ message: "Notice not found" });
+
+    const slug = title
+      ? slugify(title, { lower: true, strict: true })
+      : existing[0].slug;
     let image = existing[0].image;
     if (req.file) {
       // Delete old image if exists
@@ -95,10 +120,10 @@ export const updateNotice = async (req, res, next) => {
       }
       image = `uploads/notices/${req.file.filename}`;
     }
-    
+
     await db.execute(
-      "UPDATE notices SET title = ?, content = ?, image = ? WHERE id = ?",
-      [title, content, image, req.params.id]
+      "UPDATE notices SET title = ?, slug = ?, content = ?, image = ? WHERE id = ?",
+      [title, slug, content, image, req.params.id],
     );
     res.status(200).json({ message: "Notice updated" });
   } catch (error) {
@@ -108,9 +133,12 @@ export const updateNotice = async (req, res, next) => {
 
 export const deleteNotice = async (req, res, next) => {
   try {
-    const [existing] = await db.execute("SELECT * FROM notices WHERE id = ?", [req.params.id]);
-    if (existing.length === 0) return res.status(404).json({ message: "Notice not found" });
-    
+    const [existing] = await db.execute("SELECT * FROM notices WHERE id = ?", [
+      req.params.id,
+    ]);
+    if (existing.length === 0)
+      return res.status(404).json({ message: "Notice not found" });
+
     // Delete image if exists
     if (existing[0].image) {
       const imagePath = path.join(process.cwd(), existing[0].image);
@@ -118,7 +146,7 @@ export const deleteNotice = async (req, res, next) => {
         fs.unlinkSync(imagePath);
       }
     }
-    
+
     await db.execute("DELETE FROM notices WHERE id = ?", [req.params.id]);
     res.status(200).json({ message: "Notice deleted" });
   } catch (error) {

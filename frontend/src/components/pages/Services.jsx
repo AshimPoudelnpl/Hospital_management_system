@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useGetServicesQuery } from "@Redux/features/serviceSlice.js";
 import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
-import ServiceCard from "../ui/ServiceCard";
+import Card from "../shared/Card";
 import CTASection from "../ui/CTASection";
 import { FaHeartbeat } from "react-icons/fa";
 
@@ -28,11 +28,6 @@ const Services = () => {
 
   const services = servicesData || [];
 
-  const servicesWithImages = services.map((s) => ({
-    ...s,
-    image: s.image ? `${import.meta.env.VITE_BACKEND_URL}/${s.image}` : null,
-  }));
-
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4">
@@ -45,11 +40,22 @@ const Services = () => {
         </div>
 
         {/* Grid */}
-        {servicesWithImages.length > 0 ? (
+        {services.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {servicesWithImages.map((service, index) => (
-              <ServiceCard key={service.id || index} service={service} />
-            ))}
+            {services.map((service, index) => {
+              const IconComponent = service.icon ? () => <span>{service.icon}</span> : null;
+              return (
+                <Card
+                  key={service.id || index}
+                  image={service.image}
+                  title={service.title}
+                  description={service.description}
+                  icon={IconComponent}
+                  buttonText="Book Appointment"
+                  onButtonClick={() => navigate("/book-appointment")}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-16 text-gray-500">

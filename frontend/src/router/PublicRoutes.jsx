@@ -6,6 +6,7 @@ import About from "../components/pages/About";
 import Contact from "../components/pages/Contact";
 import BookAppointment from "../components/pages/BookAppointment";
 import Notice from "../components/pages/Notice";
+import NoticeDetail from "../components/pages/NoticeDetail";
 import Reviews from "../components/pages/Reviews";
 
 const PublicRoutes = [
@@ -18,6 +19,7 @@ const PublicRoutes = [
   { path: "contact", element: <Contact /> },
   { path: "book-appointment", element: <BookAppointment /> },
   { path: "notice", element: <Notice /> },
+  { path: "notice/:slug", element: <NoticeDetail /> },
   { path: "reviews", element: <Reviews /> },
 ];
 
