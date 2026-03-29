@@ -35,12 +35,15 @@ const Departments = () => {
   const [search, setSearch] = useState("");
 
   const { data: departments = [], isLoading } = useGetDepartmentsQuery();
-  const [addDepartment, { isLoading: isAddingDept }] = useAddDepartmentMutation();
-  const [updateDepartment, { isLoading: isUpdatingDept }] = useUpdateDepartmentMutation();
-  const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
+  const [addDepartment, { isLoading: isAddingDept }] =
+    useAddDepartmentMutation();
+  const [updateDepartment, { isLoading: isUpdatingDept }] =
+    useUpdateDepartmentMutation();
+  const [deleteDepartment, { isLoading: isDeleting }] =
+    useDeleteDepartmentMutation();
 
   const filtered = departments.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase())
+    d.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openAdd = () => {
@@ -57,7 +60,11 @@ const Departments = () => {
     setIsAdding(false);
     setIsViewing(false);
     setEditId(dept.id);
-    setFormData({ name: dept.name, description: dept.description || "", head_doctor: dept.head_doctor || "" });
+    setFormData({
+      name: dept.name,
+      description: dept.description || "",
+      head_doctor: dept.head_doctor || "",
+    });
     setServices((dept.services || []).map((s) => s.service_name));
     setImageFile(null);
     setIsModalOpen(true);
@@ -108,7 +115,10 @@ const Departments = () => {
       }
       setIsModalOpen(false);
     } catch (error) {
-      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
+      toast.error(
+        error?.data?.message ||
+          (isAdding ? "Failed to add" : "Failed to update"),
+      );
     }
   };
 
@@ -133,8 +143,14 @@ const Departments = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Departments</h1>
         <div className="flex gap-3">
-          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search departments..." />
-          <Button onClick={openAdd} variant="primary">Add Department</Button>
+          <SearchBar
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search departments..."
+          />
+          <Button onClick={openAdd} variant="primary">
+            Add Department
+          </Button>
         </div>
       </div>
 
@@ -146,7 +162,11 @@ const Departments = () => {
             { content: i + 1, className: "text-slate-600" },
             {
               content: dept.image ? (
-                <img src={`/${dept.image}`} alt={dept.name} className="w-10 h-10 rounded object-cover" />
+                <img
+                  src={`${import.meta.env.VITE_IMG_URL}${dept.image}`}
+                  alt={dept.name}
+                  className="w-10 h-10 rounded object-cover"
+                />
               ) : (
                 <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-sm">
                   {dept.name[0]}
@@ -155,7 +175,10 @@ const Departments = () => {
             },
             { content: dept.name, className: "font-medium text-slate-700" },
             { content: dept.head_doctor || "—", className: "text-slate-600" },
-            { content: dept.services?.length || 0, className: "text-slate-600" },
+            {
+              content: dept.services?.length || 0,
+              className: "text-slate-600",
+            },
           ],
         }))}
         actionOptions={actionOptions}
@@ -163,11 +186,32 @@ const Departments = () => {
         emptyMessage="No departments found"
       />
 
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Department Details" : isAdding ? "Add Department" : "Edit Department"} size="lg">
+      <Modal
+        show={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={
+          isViewing
+            ? "Department Details"
+            : isAdding
+              ? "Add Department"
+              : "Edit Department"
+        }
+        size="lg"
+      >
         {isViewing ? (
           <div className="space-y-3">
-            {viewItem?.image && <img src={`/${viewItem.image}`} alt={viewItem.name} className="w-20 h-20 rounded object-cover" />}
-            {[["Name", viewItem?.name], ["Head Doctor", viewItem?.head_doctor], ["Description", viewItem?.description]].map(([label, val]) => (
+            {viewItem?.image && (
+              <img
+                src={`/${viewItem.image}`}
+                alt={viewItem.name}
+                className="w-20 h-20 rounded object-cover"
+              />
+            )}
+            {[
+              ["Name", viewItem?.name],
+              ["Head Doctor", viewItem?.head_doctor],
+              ["Description", viewItem?.description],
+            ].map(([label, val]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>
                 <p className="text-sm text-slate-800">{val || "—"}</p>
@@ -176,31 +220,89 @@ const Departments = () => {
             <div>
               <p className="text-xs font-medium text-gray-500">Services</p>
               <div className="flex flex-wrap gap-1 mt-1">
-                {viewItem?.services?.length ? viewItem.services.map((s) => (
-                  <span key={s.id} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{s.service_name}</span>
-                )) : <p className="text-sm text-slate-400">None</p>}
+                {viewItem?.services?.length ? (
+                  viewItem.services.map((s) => (
+                    <span
+                      key={s.id}
+                      className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
+                    >
+                      {s.service_name}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400">None</p>
+                )}
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary">
+                Close
+              </Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
-            <FormInput placeholder="Department Name *" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-            <FormInput placeholder="Head Doctor" value={formData.head_doctor} onChange={(e) => setFormData({ ...formData, head_doctor: e.target.value })} />
-            <FormTextarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
+            <FormInput
+              placeholder="Department Name *"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              required
+            />
+            <FormInput
+              placeholder="Head Doctor"
+              value={formData.head_doctor}
+              onChange={(e) =>
+                setFormData({ ...formData, head_doctor: e.target.value })
+              }
+            />
+            <FormTextarea
+              placeholder="Description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              rows={3}
+            />
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Services</label>
+              <label className="text-xs text-gray-500 mb-1 block">
+                Services
+              </label>
               <div className="flex gap-2">
-                <input type="text" placeholder="Add service..." value={serviceInput} onChange={(e) => setServiceInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addService())} className="flex-1 p-2 border rounded-lg text-sm" />
-                <Button type="button" onClick={addService} variant="secondary" size="sm">Add</Button>
+                <input
+                  type="text"
+                  placeholder="Add service..."
+                  value={serviceInput}
+                  onChange={(e) => setServiceInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addService())
+                  }
+                  className="flex-1 p-2 border rounded-lg text-sm"
+                />
+                <Button
+                  type="button"
+                  onClick={addService}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Add
+                </Button>
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
                 {services.map((s) => (
-                  <span key={s} className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                  <span
+                    key={s}
+                    className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
+                  >
                     {s}
-                    <button type="button" onClick={() => removeService(s)} className="text-blue-400 hover:text-red-500">&times;</button>
+                    <button
+                      type="button"
+                      onClick={() => removeService(s)}
+                      className="text-blue-400 hover:text-red-500"
+                    >
+                      &times;
+                    </button>
                   </span>
                 ))}
               </div>
@@ -210,8 +312,21 @@ const Departments = () => {
               onChange={(e) => setImageFile(e.target.files[0])}
             />
             <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
-              <Button type="submit" variant="primary" isLoading={isAddingDept || isUpdatingDept} loadingText={isAdding ? "Adding..." : "Updating..."}>{isAdding ? "Add" : "Update"}</Button>
+              <Button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                variant="secondary"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isAddingDept || isUpdatingDept}
+                loadingText={isAdding ? "Adding..." : "Updating..."}
+              >
+                {isAdding ? "Add" : "Update"}
+              </Button>
             </div>
           </form>
         )}
