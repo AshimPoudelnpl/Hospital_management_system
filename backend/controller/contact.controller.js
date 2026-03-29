@@ -1,7 +1,8 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 
 export const createContact = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { name, email, phone, message } = req.body;
     if (!name || !email || !phone || !message)
       return res.status(400).json({ message: "name, email, phone and message are required" });
@@ -44,6 +45,7 @@ export const createContact = async (req, res, next) => {
 
 export const getAllContacts = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { search, page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
@@ -84,6 +86,7 @@ export const getAllContacts = async (req, res, next) => {
 
 export const getContactById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute("SELECT * FROM contacts WHERE id = ?", [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: "Contact not found" });
     res.status(200).json(rows[0]);
@@ -94,6 +97,7 @@ export const getContactById = async (req, res, next) => {
 
 export const deleteContact = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [existing] = await db.execute("SELECT * FROM contacts WHERE id = ?", [req.params.id]);
     if (existing.length === 0) return res.status(404).json({ message: "Contact not found" });
     await db.execute("DELETE FROM contacts WHERE id = ?", [req.params.id]);

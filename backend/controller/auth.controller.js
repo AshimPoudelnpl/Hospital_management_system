@@ -1,4 +1,4 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 import bcrypt from "bcryptjs";
 import Jwt from "jsonwebtoken";
 
@@ -7,6 +7,7 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({ message: "Email and password are required" });
+    const db = await getConnection();
     const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [email]);
     if (rows.length === 0)
       return res.status(401).json({ message: "Invalid email or password" });

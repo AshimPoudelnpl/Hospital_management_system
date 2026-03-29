@@ -1,4 +1,4 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 import fs from "fs";
 import { get } from "http";
 import path from "path";
@@ -6,6 +6,7 @@ import slugify from "slugify";
 
 export const createNotice = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { title, content } = req.body;
     if (!title || !content)
       return res
@@ -27,6 +28,7 @@ export const createNotice = async (req, res, next) => {
 
 export const getAllNotices = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { search, page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
@@ -69,6 +71,7 @@ export const getAllNotices = async (req, res, next) => {
 
 export const getNoticeById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute(
       `SELECT n.*, u.name AS created_by_name 
        FROM notices n 
@@ -86,6 +89,7 @@ export const getNoticeById = async (req, res, next) => {
 
 export const getNoticeBySlug = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute(`select * from notices where slug = ?`, [
       req.params.slug,
     ]);
@@ -99,6 +103,7 @@ export const getNoticeBySlug = async (req, res, next) => {
 
 export const updateNotice = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { title, content } = req.body;
     const [existing] = await db.execute("SELECT * FROM notices WHERE id = ?", [
       req.params.id,
@@ -133,6 +138,7 @@ export const updateNotice = async (req, res, next) => {
 
 export const deleteNotice = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [existing] = await db.execute("SELECT * FROM notices WHERE id = ?", [
       req.params.id,
     ]);

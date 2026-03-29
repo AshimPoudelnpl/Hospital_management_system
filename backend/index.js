@@ -39,7 +39,8 @@ const PORT = process.env.PORT || 3001;
 
 (async () => {
   try {
-    await db.ping();
+    const connection = await db;
+    await connection.ping();
     console.log('Database connected successfully');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

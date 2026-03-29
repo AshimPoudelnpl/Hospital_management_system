@@ -31,8 +31,7 @@ const NoticeDetail = () => {
   const navigate = useNavigate();
   const [imageFailed, setImageFailed] = useState(false);
   const { data: notice, isLoading, error } = useGetNoticeBySlugQuery(slug);
-  const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+  const backendUrl = import.meta.env.VITE_IMG_URL || "http://localhost:3001";
 
   useEffect(() => {
     setImageFailed(false);

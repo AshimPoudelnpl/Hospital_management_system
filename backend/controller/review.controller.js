@@ -1,7 +1,8 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 
 export const createReview = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { name, role, rating, text } = req.body;
 
     if (!name || !text || !rating) {
@@ -32,6 +33,7 @@ export const createReview = async (req, res, next) => {
 
 export const getAllReviews = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute(
       `SELECT id, name, rating, review_text AS text, created_at
        FROM reviews
@@ -47,6 +49,7 @@ export const getAllReviews = async (req, res, next) => {
 
 export const getReviewById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute(
       `SELECT id, name, rating, review_text AS text, created_at
        FROM reviews
@@ -68,6 +71,7 @@ export const getReviewById = async (req, res, next) => {
 
 export const updateReview = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { name, rating, text } = req.body;
 
     const [result] = await db.execute(
@@ -91,6 +95,7 @@ export const updateReview = async (req, res, next) => {
 
 export const deleteReview = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [result] = await db.execute(
       "DELETE FROM reviews WHERE id = ?",
       [req.params.id]

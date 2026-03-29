@@ -1,8 +1,9 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 import { removeImage } from "../utils/removeImg.js";
 
 export const createService = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { title, description } = req.body;
     const image = req.file ? req.file.path : null;
     if (!title) return res.status(400).json({ message: "Title is required" });
@@ -18,6 +19,7 @@ export const createService = async (req, res, next) => {
 
 export const getAllServices = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { search, page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
@@ -58,6 +60,7 @@ export const getAllServices = async (req, res, next) => {
 
 export const getServiceById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute("SELECT * FROM services WHERE id = ?", [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: "Service not found" });
     res.status(200).json(rows[0]);
@@ -68,6 +71,7 @@ export const getServiceById = async (req, res, next) => {
 
 export const updateService = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { title, description } = req.body;
     const [existing] = await db.execute("SELECT * FROM services WHERE id = ?", [req.params.id]);
     if (existing.length === 0) return res.status(404).json({ message: "Service not found" });
@@ -85,6 +89,7 @@ export const updateService = async (req, res, next) => {
 
 export const deleteService = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [existing] = await db.execute("SELECT * FROM services WHERE id = ?", [req.params.id]);
     if (existing.length === 0) return res.status(404).json({ message: "Service not found" });
     if (existing[0].image) removeImage(existing[0].image);

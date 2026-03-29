@@ -1,8 +1,9 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 import { removeImage } from "../utils/removeImg.js";
 
 export const createDepartment = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { name, description, head_doctor, services } = req.body;
     const image = req.file ? req.file.path : null;
     if (!name) return res.status(400).json({ message: "Name is required" });
@@ -36,6 +37,7 @@ export const createDepartment = async (req, res, next) => {
 
 export const getAllDepartments = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { search, page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
@@ -84,6 +86,7 @@ export const getAllDepartments = async (req, res, next) => {
 
 export const getDepartmentById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute("SELECT * FROM departments WHERE id = ?", [
       req.params.id,
     ]);
@@ -101,6 +104,7 @@ export const getDepartmentById = async (req, res, next) => {
 
 export const updateDepartment = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { name, description, head_doctor, services } = req.body;
     const [existing] = await db.execute(
       "SELECT * FROM departments WHERE id = ?",
@@ -145,6 +149,7 @@ export const updateDepartment = async (req, res, next) => {
 
 export const deleteDepartment = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [existing] = await db.execute(
       "SELECT * FROM departments WHERE id = ?",
       [req.params.id],

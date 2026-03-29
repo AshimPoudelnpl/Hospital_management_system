@@ -114,7 +114,7 @@ const Home = () => {
   const navigate = useNavigate();
   const images = [doctorImage, surgeonImage];
 
-  const { data: servicesData, isLoading: servicesLoading } =
+  const { data: servicesData, isLoading: servicesLoading, error: servicesError } =
     useGetServicesQuery();
   const { data: doctorsData, isLoading: doctorsLoading } = useGetDoctorsQuery();
   const { data: reviewsData = [], isLoading: reviewsLoading } =
@@ -377,28 +377,43 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-blue-900 mb-12">
             Our Services
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => {
-              const IconComponent = service.icon ? () => service.icon : null;
-              return (
-                <Card
-                  key={service.id || index}
-                  image={service.image}
-                  title={service.title}
-                  description={service.description}
-                  icon={IconComponent}
-                  buttonText="Book Appointment"
-                  onButtonClick={() => navigate("/book-appointment")}
-                />
-              );
-            })}
-          </div>
-          <button
-            onClick={() => navigate("/services")}
-            className="mt-10 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
-          >
-            View All Services
-          </button>
+          {servicesError ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              <FaHeartbeat className="text-5xl text-gray-300 mb-4" />
+              <p className="text-red-600 text-lg mb-4">Failed to connect to server. Please check if the backend is running.</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-3 gap-8">
+                {services.map((service, index) => {
+                  const IconComponent = service.icon ? () => service.icon : null;
+                  return (
+                    <Card
+                      key={service.id || index}
+                      image={service.image}
+                      title={service.title}
+                      description={service.description}
+                      icon={IconComponent}
+                      buttonText="Book Appointment"
+                      onButtonClick={() => navigate("/book-appointment")}
+                    />
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => navigate("/services")}
+                className="mt-10 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+              >
+                View All Services
+              </button>
+            </>
+          )}
         </div>
       </div>
 

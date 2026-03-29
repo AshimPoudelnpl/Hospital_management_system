@@ -54,10 +54,10 @@ CREATE TABLE appointments (
     patient_name VARCHAR(100) NOT NULL,
     patient_email VARCHAR(100) NOT NULL,
     patient_phone VARCHAR(20) NOT NULL,
-    doctor_id INT NOT NULL,
-    department_id INT NOT NULL,
+    doctor_id INT NULL,
+    department_id INT NULL,
     appointment_date DATE NOT NULL,
-    appointment_time TIME(0) NOT NULL, -- full time HH:MM:SS
+    appointment_time TIME NOT NULL,
     message TEXT,
     status ENUM(
         'pending',

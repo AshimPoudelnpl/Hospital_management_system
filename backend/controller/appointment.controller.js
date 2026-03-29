@@ -1,4 +1,4 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 import {
   sendAdminAppointmentNotification,
   sendAppointmentConfirmationEmail,
@@ -6,6 +6,7 @@ import {
 
 export const createAppointment = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const {
       patient_name,
       patient_email,
@@ -95,6 +96,7 @@ export const createAppointment = async (req, res, next) => {
 
 export const getAllAppointments = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { search, status, page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
@@ -149,6 +151,7 @@ export const getAllAppointments = async (req, res, next) => {
 
 export const getAppointmentById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute(
       `SELECT a.*, d.name AS doctor_name, dep.name AS department_name 
        FROM appointments a 
@@ -167,6 +170,7 @@ export const getAppointmentById = async (req, res, next) => {
 
 export const updateAppointmentStatus = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { status } = req.body;
     const validStatuses = ["pending", "confirmed", "cancelled", "completed"];
     if (!validStatuses.includes(status))
@@ -194,6 +198,7 @@ export const updateAppointmentStatus = async (req, res, next) => {
 
 export const deleteAppointment = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [existing] = await db.execute(
       "SELECT * FROM appointments WHERE id = ?",
       [req.params.id],

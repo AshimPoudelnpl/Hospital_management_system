@@ -16,7 +16,7 @@ const Services = () => {
   if (error)
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <p className="text-red-600 text-lg mb-4">Failed to load services.</p>
+        <p className="text-red-600 text-lg mb-4">Failed to connect to server. Please check if the backend is running.</p>
         <button
           onClick={() => window.location.reload()}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"

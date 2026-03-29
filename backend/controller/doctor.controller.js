@@ -1,8 +1,9 @@
-import db from "../config/db.js";
+import { getConnection } from "../config/dbHelper.js";
 import { removeImage } from "../utils/removeImg.js";
 
 export const createDoctor = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const {
       name,
       specialty,
@@ -46,6 +47,7 @@ export const createDoctor = async (req, res, next) => {
 
 export const getAllDoctors = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const { department_id, search, page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page) || 1);
     const pageSize = Math.max(1, Math.min(100, parseInt(limit) || 10));
@@ -99,6 +101,7 @@ export const getAllDoctors = async (req, res, next) => {
 
 export const getDoctorById = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [rows] = await db.execute(
       `SELECT d.*, dep.name AS department_name 
        FROM doctors d 
@@ -116,6 +119,7 @@ export const getDoctorById = async (req, res, next) => {
 
 export const updateDoctor = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const {
       name,
       specialty,
@@ -162,6 +166,7 @@ export const updateDoctor = async (req, res, next) => {
 
 export const deleteDoctor = async (req, res, next) => {
   try {
+    const db = await getConnection();
     const [existing] = await db.execute("SELECT * FROM doctors WHERE id = ?", [
       req.params.id,
     ]);
