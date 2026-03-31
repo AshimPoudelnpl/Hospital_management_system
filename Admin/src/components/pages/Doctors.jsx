@@ -20,6 +20,8 @@ import Skeleton from "../shared/Skeleton";
 import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
+const IMG_URL = import.meta.env.VITE_IMG_URL;
+
 const EMPTY = {
   name: "",
   specialty: "",
@@ -127,8 +129,10 @@ const Doctors = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, doc) => {
+  const handleAction = (e, row) => {
     const val = e.target.value;
+    const doc = filtered.find(d => d.id === row.id);
+    if (!doc) return;
     if (val === "Edit") openEdit(doc);
     else if (val === "View") openView(doc);
     else if (val === "Delete") handleDelete(doc.id);
@@ -161,7 +165,7 @@ const Doctors = () => {
             { content: i + 1, className: "text-slate-600" },
             {
               content: doc.image ? (
-                <img src={`/${doc.image}`} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
+                <img src={`${IMG_URL}/${doc.image}`} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
                   {doc.name[0]}
@@ -192,7 +196,7 @@ const Doctors = () => {
           <div className="space-y-3">
             {viewItem?.image && (
               <img
-                src={`/${viewItem.image}`}
+                src={`${IMG_URL}/${viewItem.image}`}
                 alt={viewItem.name}
                 className="w-20 h-20 rounded-full object-cover"
               />

@@ -18,6 +18,8 @@ import Skeleton from "../shared/Skeleton";
 import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
+const IMG_URL = import.meta.env.VITE_IMG_URL;
+
 const EMPTY = { title: "", description: "" };
 
 const Services = () => {
@@ -104,8 +106,10 @@ const Services = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, svc) => {
+  const handleAction = (e, row) => {
     const val = e.target.value;
+    const svc = filtered.find(s => s.id === row.id);
+    if (!svc) return;
     if (val === "Edit") openEdit(svc);
     else if (val === "View") openView(svc);
     else if (val === "Delete") handleDelete(svc.id);
@@ -132,7 +136,7 @@ const Services = () => {
             { content: i + 1, className: "text-slate-600" },
             {
               content: svc.image ? (
-                <img src={`/${svc.image}`} alt={svc.title} className="w-10 h-10 rounded object-cover" />
+                <img src={`${IMG_URL}/${svc.image}`} alt={svc.title} className="w-10 h-10 rounded object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">
                   {svc.title[0]}
@@ -151,7 +155,7 @@ const Services = () => {
       <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Service Details" : isAdding ? "Add Service" : "Edit Service"} size="lg">
         {isViewing ? (
           <div className="space-y-3">
-            {viewItem?.image && <img src={`/${viewItem.image}`} alt={viewItem.title} className="w-20 h-20 rounded object-cover" />}
+            {viewItem?.image && <img src={`${IMG_URL}/${viewItem.image}`} alt={viewItem.title} className="w-20 h-20 rounded object-cover" />}
             {[["Title", viewItem?.title], ["Description", viewItem?.description]].map(([label, val]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>

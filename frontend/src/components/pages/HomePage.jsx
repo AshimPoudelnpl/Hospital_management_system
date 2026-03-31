@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetServicesQuery } from "@Redux/features/serviceSlice.js";
 import { useGetDoctorsQuery } from "@Redux/features/doctorSlice.js";
@@ -6,9 +6,16 @@ import { useGetReviewsQuery } from "@Redux/features/reviewSlice.js";
 import Skeleton from "../shared/Skeleton";
 import Card from "../shared/Card";
 import HeroSection from "../ui/HeroSection";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import doctorImage from "../../assets/medium-shot-doctor-checking-blood-pressure-female-patient.jpg";
 import surgeonImage from "../../assets/ordinary-busy-day-surgeon.jpg";
 import doctor from "../../assets/9109683.png";
+import chairmanImage from "../../assets/doctors/suman20250822062527.webp";
+import contactSvg from "../../assets/svg/Contact us-amico.svg";
+import hospitalBedSvg from "../../assets/svg/Hospital bed-bro.svg";
+import interviewSvg from "../../assets/svg/Interview-bro.svg";
+import service24Svg from "../../assets/svg/Service 24_7-bro.svg";
 import {
   FaUserMd,
   FaAmbulance,
@@ -31,6 +38,8 @@ import {
   FaClock,
   FaStar,
 } from "react-icons/fa";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const fallbackReviews = [
   {
@@ -114,11 +123,228 @@ const Home = () => {
   const navigate = useNavigate();
   const images = [doctorImage, surgeonImage];
 
+  const statsRef = useRef([]);
+  const quickLinksRef = useRef([]);
+  const whyDifferentRef = useRef([]);
+  const achievementRef = useRef([]);
+  const servicesRef = useRef([]);
+  const doctorsRef = useRef([]);
+  const reviewsRef = useRef([]);
+  const chairmanImageRef = useRef(null);
+  const chairmanBadgeRef = useRef(null);
+  const chairmanContentRef = useRef(null);
+  const specialtyCenterRef = useRef(null);
+
   const { data: servicesData, isLoading: servicesLoading, error: servicesError } =
     useGetServicesQuery();
   const { data: doctorsData, isLoading: doctorsLoading } = useGetDoctorsQuery();
   const { data: reviewsData = [], isLoading: reviewsLoading } =
     useGetReviewsQuery();
+
+  useEffect(() => {
+    // Statistics Cards Animation
+    gsap.fromTo(
+      statsRef.current,
+      { opacity: 0, y: 60, scale: 0.8, rotation: -5 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotation: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "back.out(1.7)",
+        scrollTrigger: {
+          trigger: statsRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Quick Links Animation
+    gsap.fromTo(
+      quickLinksRef.current,
+      { opacity: 0, scale: 0.5, y: 40, rotation: 10 },
+      {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        rotation: 0,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: "elastic.out(1, 0.6)",
+        scrollTrigger: {
+          trigger: quickLinksRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Why We're Different Cards
+    gsap.fromTo(
+      whyDifferentRef.current,
+      { opacity: 0, x: -80, rotationY: -30 },
+      {
+        opacity: 1,
+        x: 0,
+        rotationY: 0,
+        duration: 0.9,
+        stagger: 0.2,
+        ease: "power4.out",
+        scrollTrigger: {
+          trigger: whyDifferentRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Achievement Stats
+    gsap.fromTo(
+      achievementRef.current,
+      { opacity: 0, y: 40, scale: 0.6 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "elastic.out(1, 0.5)",
+        scrollTrigger: {
+          trigger: achievementRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Services Cards
+    gsap.fromTo(
+      servicesRef.current,
+      { opacity: 0, y: 50, scale: 0.85, rotationX: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: "back.out(1.5)",
+        scrollTrigger: {
+          trigger: servicesRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Doctors Cards
+    gsap.fromTo(
+      doctorsRef.current,
+      { opacity: 0, scale: 0.7, y: 40, rotation: -8 },
+      {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        rotation: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "back.out(1.8)",
+        scrollTrigger: {
+          trigger: doctorsRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Reviews Cards
+    gsap.fromTo(
+      reviewsRef.current,
+      { opacity: 0, y: 40, rotateY: 20, scale: 0.8 },
+      {
+        opacity: 1,
+        y: 0,
+        rotateY: 0,
+        scale: 1,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: "back.out(1.6)",
+        scrollTrigger: {
+          trigger: reviewsRef.current[0],
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Chairman Message Image
+    gsap.fromTo(
+      chairmanImageRef.current,
+      { opacity: 0, x: -100, scale: 0.8, rotation: -10 },
+      {
+        opacity: 1,
+        x: 0,
+        scale: 1,
+        rotation: 0,
+        duration: 1,
+        ease: "back.out(1.5)",
+        scrollTrigger: {
+          trigger: chairmanImageRef.current,
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Chairman Badge
+    gsap.fromTo(
+      chairmanBadgeRef.current,
+      { opacity: 0, scale: 0.5, rotation: 15 },
+      {
+        opacity: 1,
+        scale: 1,
+        rotation: 0,
+        duration: 0.8,
+        delay: 0.5,
+        ease: "elastic.out(1, 0.6)",
+        scrollTrigger: {
+          trigger: chairmanImageRef.current,
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Chairman Content
+    gsap.fromTo(
+      chairmanContentRef.current?.children,
+      { opacity: 0, x: 80, y: 20 },
+      {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power4.out",
+        scrollTrigger: {
+          trigger: chairmanContentRef.current,
+          start: "top 85%",
+        },
+      }
+    );
+
+    // Specialty Center
+    gsap.fromTo(
+      specialtyCenterRef.current,
+      { opacity: 0, y: 60, scale: 0.9, rotationX: 15 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotationX: 0,
+        duration: 1,
+        ease: "back.out(1.4)",
+        scrollTrigger: {
+          trigger: specialtyCenterRef.current,
+          start: "top 85%",
+        },
+      }
+    );
+  }, [servicesData, doctorsData, reviewsData]);
 
   if (servicesLoading || doctorsLoading || reviewsLoading)
     return <Skeleton variant="grid" count={6} />;
@@ -160,28 +386,28 @@ const Home = () => {
       {/* Statistics */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+          <div ref={(el) => (statsRef.current[0] = el)} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
             <div className="text-4xl text-blue-600 mb-3 flex justify-center">
               <FaUserMd />
             </div>
             <p className="text-3xl font-bold text-blue-900 mb-1">50+</p>
             <p className="text-gray-600 text-sm">Medical Professionals</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+          <div ref={(el) => (statsRef.current[1] = el)} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
             <div className="text-4xl text-blue-600 mb-3 flex justify-center">
               <FaAmbulance />
             </div>
             <p className="text-3xl font-bold text-blue-900 mb-1">24/7</p>
             <p className="text-gray-600 text-sm">Emergency Care</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+          <div ref={(el) => (statsRef.current[2] = el)} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
             <div className="text-4xl text-blue-600 mb-3 flex justify-center">
               <FaHospital />
             </div>
             <p className="text-3xl font-bold text-blue-900 mb-1">Modern</p>
             <p className="text-gray-600 text-sm">Facilities & Equipments</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+          <div ref={(el) => (statsRef.current[3] = el)} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
             <div className="text-4xl text-blue-600 mb-3 flex justify-center">
               <FaBriefcaseMedical />
             </div>
@@ -218,11 +444,12 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-6">
             <div
+              ref={(el) => (quickLinksRef.current[0] = el)}
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer"
               onClick={() => navigate("/doctors")}
             >
-              <div className="text-4xl text-blue-600 mb-4">
-                <FaUserMd className="text-blue-600" />
+              <div className="w-20 h-20 mx-auto mb-4">
+                <img src={interviewSvg} alt="Find Doctors" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-lg font-bold text-blue-900 mb-2">
                 Find Doctors
@@ -236,11 +463,12 @@ const Home = () => {
             </div>
 
             <div
+              ref={(el) => (quickLinksRef.current[1] = el)}
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer"
               onClick={() => navigate("/departments")}
             >
-              <div className="text-4xl text-green-600 mb-4">
-                <FaHospital className="text-blue-900" />
+              <div className="w-20 h-20 mx-auto mb-4">
+                <img src={hospitalBedSvg} alt="Departments" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-lg font-bold text-blue-900 mb-2">
                 Departments
@@ -254,11 +482,12 @@ const Home = () => {
             </div>
 
             <div
+              ref={(el) => (quickLinksRef.current[2] = el)}
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer"
               onClick={() => navigate("/services")}
             >
-              <div className="text-4xl text-blue-600 mb-4">
-                <FaStethoscope className="text-blue-600" />
+              <div className="w-20 h-20 mx-auto mb-4">
+                <img src={service24Svg} alt="Services" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-lg font-bold text-blue-900 mb-2">
                 Services
@@ -272,11 +501,12 @@ const Home = () => {
             </div>
 
             <div
+              ref={(el) => (quickLinksRef.current[3] = el)}
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer"
               onClick={() => navigate("/contact")}
             >
-              <div className="text-4xl text-blue-600 mb-4">
-                <FaPhoneAlt className="text-blue-600" />
+              <div className="w-20 h-20 mx-auto mb-4">
+                <img src={contactSvg} alt="Contact Us" className="w-full h-full object-contain" />
               </div>
               <h3 className="text-lg font-bold text-blue-900 mb-2">
                 Contact Us
@@ -287,6 +517,119 @@ const Home = () => {
               <span className="text-blue-600 font-semibold flex items-center gap-2">
                 Call Now <FaArrowRight size={14} className="text-blue-600" />
               </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chairman Message */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div ref={chairmanImageRef} className="relative">
+              <div className="absolute -top-6 -left-6 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+              <div className="relative z-10">
+                <img
+                  src={chairmanImage}
+                  alt="Chairman"
+                  className="rounded-2xl shadow-2xl w-full max-w-md mx-auto"
+                />
+                <div ref={chairmanBadgeRef} className="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                      <FaAward className="text-white text-2xl" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-blue-900">15+ Years</p>
+                      <p className="text-sm text-gray-600">Excellence</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div ref={chairmanContentRef}>
+              <span className="inline-block bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+                Message from Leadership
+              </span>
+              <h2 className="text-4xl font-bold text-blue-900 mb-6">
+                Chairman's Message
+              </h2>
+              <div className="space-y-4 text-gray-700 leading-relaxed">
+                <p className="text-lg">
+                  Welcome to Swastik Hospital, where compassionate care meets medical excellence. For over 15 years, we have been committed to providing world-class healthcare services to our community.
+                </p>
+                <p>
+                  Our mission is simple yet profound: to deliver exceptional medical care with dignity, respect, and compassion. We believe that every patient deserves access to quality healthcare, and we strive to make that a reality through our dedicated team of medical professionals and state-of-the-art facilities.
+                </p>
+                <p>
+                  At Swastik Hospital, we don't just treat illnesses; we care for people. Our patient-centered approach ensures that you receive personalized attention and comprehensive treatment tailored to your unique needs.
+                </p>
+                <p className="italic text-blue-900 font-medium">
+                  "Your health and well-being are our top priorities. We are honored to serve you and your family."
+                </p>
+              </div>
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <p className="font-bold text-xl text-blue-900">Dr. Rajesh Kumar</p>
+                <p className="text-gray-600">Chairman, Swastik Hospital</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Specialty Centers */}
+      <div className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="inline-block bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              Our Expertise
+            </span>
+            <h2 className="text-4xl font-bold text-blue-900 mb-3">
+              Specialty Center
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              State-of-the-art facilities and specialized care
+            </p>
+          </div>
+
+          {/* Cardiology Center */}
+          <div ref={specialtyCenterRef} className="grid md:grid-cols-2 gap-8 items-center bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+            <div className="relative overflow-hidden rounded-xl">
+              <img
+                src={doctorImage}
+                alt="Cardiology Center"
+                className="w-full h-80 object-cover hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">
+                <FaHeartbeat className="inline mr-2" />
+                Cardiology
+              </div>
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold text-blue-900 mb-4">Cardiac Care Center</h3>
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                Our advanced Cardiac Care Center offers comprehensive heart care services with cutting-edge technology and experienced cardiologists. We provide diagnostic services, interventional procedures, and cardiac rehabilitation programs.
+              </p>
+              <ul className="space-y-2 mb-6">
+                <li className="flex items-center text-gray-700">
+                  <FaCheckCircle className="text-green-500 mr-3" />
+                  24/7 Emergency Cardiac Care
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <FaCheckCircle className="text-green-500 mr-3" />
+                  Advanced Cardiac Imaging
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <FaCheckCircle className="text-green-500 mr-3" />
+                  Interventional Cardiology
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate("/about")}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center gap-2"
+              >
+                See More <FaArrowRight />
+              </button>
             </div>
           </div>
         </div>
@@ -304,7 +647,7 @@ const Home = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-lg border-l-4 border-blue-600">
+            <div ref={(el) => (whyDifferentRef.current[0] = el)} className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-lg border-l-4 border-blue-600">
               <div className="text-5xl text-blue-600 mb-4">
                 <FaAward />
               </div>
@@ -316,7 +659,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-lg border-l-4 border-green-600">
+            <div ref={(el) => (whyDifferentRef.current[1] = el)} className="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-lg border-l-4 border-green-600">
               <div className="text-5xl text-blue-400 mb-4">
                 <FaShieldAlt />
               </div>
@@ -328,7 +671,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="bg-linear-to-br from-blue-50 to-green-50 p-8 rounded-lg border-l-4 border-blue-600">
+            <div ref={(el) => (whyDifferentRef.current[2] = el)} className="bg-linear-to-br from-blue-50 to-green-50 p-8 rounded-lg border-l-4 border-blue-600">
               <div className="text-5xl text-blue-600 mb-4">
                 <FaLightbulb />
               </div>
@@ -347,22 +690,22 @@ const Home = () => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
+            <div ref={(el) => (achievementRef.current[0] = el)}>
               <FaCalendarAlt className="text-4xl mx-auto mb-3" />
               <p className="text-3xl font-bold">5000+</p>
               <p className="text-blue-100">Appointments Booked</p>
             </div>
-            <div>
+            <div ref={(el) => (achievementRef.current[1] = el)}>
               <FaUsers className="text-4xl mx-auto mb-3" />
               <p className="text-3xl font-bold">10000+</p>
               <p className="text-blue-100">Happy Patients</p>
             </div>
-            <div>
+            <div ref={(el) => (achievementRef.current[2] = el)}>
               <FaTrophy className="text-4xl mx-auto mb-3" />
               <p className="text-3xl font-bold">15+</p>
               <p className="text-blue-100">Years Experience</p>
             </div>
-            <div>
+            <div ref={(el) => (achievementRef.current[3] = el)}>
               <FaClock className="text-4xl mx-auto mb-3" />
               <p className="text-3xl font-bold">24/7</p>
               <p className="text-blue-100">Available Service</p>
@@ -394,15 +737,16 @@ const Home = () => {
                 {services.map((service, index) => {
                   const IconComponent = service.icon ? () => service.icon : null;
                   return (
-                    <Card
-                      key={service.id || index}
-                      image={service.image}
-                      title={service.title}
-                      description={service.description}
-                      icon={IconComponent}
-                      buttonText="Book Appointment"
-                      onButtonClick={() => navigate("/book-appointment")}
-                    />
+                    <div key={service.id || index} ref={(el) => (servicesRef.current[index] = el)}>
+                      <Card
+                        image={service.image}
+                        title={service.title}
+                        description={service.description}
+                        icon={IconComponent}
+                        buttonText="Book Appointment"
+                        onButtonClick={() => navigate("/book-appointment")}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -432,34 +776,35 @@ const Home = () => {
           {doctors.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {doctors.map((doc, index) => (
-                <Card
-                  key={doc.id || index}
-                  image={doc.image}
-                  title={doc.name}
-                  subtitle={
-                    <span className="flex items-center gap-2">
-                      <FaStethoscope className="text-sm flex-shrink-0" />
-                      <span className="line-clamp-1">{doc.specialty}</span>
-                    </span>
-                  }
-                  badge={
-                    doc.experience && (
+                <div key={doc.id || index} ref={(el) => (doctorsRef.current[index] = el)}>
+                  <Card
+                    image={doc.image}
+                    title={doc.name}
+                    subtitle={
                       <span className="flex items-center gap-2">
-                        <FaClock className="text-xs flex-shrink-0" />
-                        <span className="line-clamp-1">{doc.experience} experience</span>
+                        <FaStethoscope className="text-sm flex-shrink-0" />
+                        <span className="line-clamp-1">{doc.specialty}</span>
                       </span>
-                    )
-                  }
-                  description={doc.description}
-                  expandable={true}
-                  buttonText="Book Appointment"
-                  onButtonClick={() => {
-                    const params = new URLSearchParams();
-                    if (doc.department_id) params.append("department_id", doc.department_id);
-                    params.append("doctor_id", doc.id);
-                    navigate(`/book-appointment?${params.toString()}`);
-                  }}
-                />
+                    }
+                    badge={
+                      doc.experience && (
+                        <span className="flex items-center gap-2">
+                          <FaClock className="text-xs flex-shrink-0" />
+                          <span className="line-clamp-1">{doc.experience} experience</span>
+                        </span>
+                      )
+                    }
+                    description={doc.description}
+                    expandable={true}
+                    buttonText="Book Appointment"
+                    onButtonClick={() => {
+                      const params = new URLSearchParams();
+                      if (doc.department_id) params.append("department_id", doc.department_id);
+                      params.append("doctor_id", doc.id);
+                      navigate(`/book-appointment?${params.toString()}`);
+                    }}
+                  />
+                </div>
               ))}
             </div>
           ) : (
@@ -532,7 +877,7 @@ const Home = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {reviews.map((review, i) => (
-              <div key={review.id || i} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+              <div key={review.id || i} ref={(el) => (reviewsRef.current[i] = el)} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
                 <div className="flex items-center gap-1 text-yellow-400 mb-3">
                   {[...Array(review.rating || 5)].map((_, idx) => (
                     <FaStar key={idx} />

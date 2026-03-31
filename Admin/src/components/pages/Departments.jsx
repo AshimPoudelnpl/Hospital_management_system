@@ -18,6 +18,8 @@ import Skeleton from "../shared/Skeleton";
 import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
+const IMG_URL = import.meta.env.VITE_IMG_URL;
+
 const EMPTY = { name: "", description: "", head_doctor: "" };
 
 const Departments = () => {
@@ -128,8 +130,10 @@ const Departments = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, dept) => {
+  const handleAction = (e, row) => {
     const val = e.target.value;
+    const dept = filtered.find(d => d.id === row.id);
+    if (!dept) return;
     if (val === "Edit") openEdit(dept);
     else if (val === "View") openView(dept);
     else if (val === "Delete") handleDelete(dept.id);
@@ -163,7 +167,7 @@ const Departments = () => {
             {
               content: dept.image ? (
                 <img
-                  src={`${import.meta.env.VITE_IMG_URL}${dept.image}`}
+                  src={`${IMG_URL}/${dept.image}`}
                   alt={dept.name}
                   className="w-10 h-10 rounded object-cover"
                 />
@@ -202,7 +206,7 @@ const Departments = () => {
           <div className="space-y-3">
             {viewItem?.image && (
               <img
-                src={`/${viewItem.image}`}
+                src={`${IMG_URL}/${viewItem.image}`}
                 alt={viewItem.name}
                 className="w-20 h-20 rounded object-cover"
               />

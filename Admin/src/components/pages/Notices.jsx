@@ -18,6 +18,8 @@ import Skeleton from "../shared/Skeleton";
 import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
+const IMG_URL = import.meta.env.VITE_IMG_URL;
+
 const EMPTY = { title: "", content: "", image: null };
 
 const Notices = () => {
@@ -105,8 +107,10 @@ const Notices = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, notice) => {
+  const handleAction = (e, row) => {
     const val = e.target.value;
+    const notice = filtered.find(n => n.id === row.id);
+    if (!notice) return;
     if (val === "Edit") openEdit(notice);
     else if (val === "View") openView(notice);
     else if (val === "Delete") handleDelete(notice.id);
@@ -133,7 +137,7 @@ const Notices = () => {
             { content: i + 1, className: "text-slate-600" },
             {
               content: notice.image ? (
-                <img src={`/${notice.image}`} alt={notice.title} className="w-10 h-10 rounded object-cover" />
+                <img src={`${IMG_URL}/${notice.image}`} alt={notice.title} className="w-10 h-10 rounded object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
               ),
@@ -154,7 +158,7 @@ const Notices = () => {
           <div className="space-y-3">
             {viewItem?.image && (
               <div>
-                <img src={`/${viewItem.image}`} alt={viewItem.title} className="w-full h-48 rounded object-cover mb-3" />
+                <img src={`${IMG_URL}/${viewItem.image}`} alt={viewItem.title} className="w-full h-48 rounded object-cover mb-3" />
               </div>
             )}
             <div>
