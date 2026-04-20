@@ -10,7 +10,7 @@ import { useGetServicesQuery } from "../../Redux/features/servicesSlice";
 import { FaUserMd, FaFolder, FaPlus, FaCalendarAlt, FaBell, FaEnvelope, FaHospital, FaClock } from "react-icons/fa";
 
 const PageCard = ({ className = "", children }) => (
-  <section className={`rounded-[28px] border border-slate-200 bg-white/95 p-5 shadow-sm ${className}`}>
+  <section className={`rounded-[28px] border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 ${className}`}>
     {children}
   </section>
 );
@@ -46,14 +46,14 @@ const QuickAction = ({ title, description, onClick, accent }) => (
 );
 
 const AppointmentRow = ({ appointment, badgeClass }) => (
-  <div className="grid grid-cols-[1.2fr_1.1fr_1fr_auto] items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+  <div className="grid gap-3 rounded-2xl bg-slate-50 px-4 py-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1fr)_auto] sm:items-center">
     <div>
       <p className="text-sm font-semibold text-slate-800">{appointment.patient_name || "Unknown patient"}</p>
       <p className="text-xs text-slate-500">{appointment.doctor_name || "Doctor pending"}</p>
     </div>
     <p className="text-sm text-slate-600">{appointment.department_name || "General"}</p>
     <p className="text-sm text-slate-600">{appointment.appointment_date || "Date pending"}</p>
-    <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${badgeClass}`}>
+    <span className={`justify-self-start rounded-full px-3 py-1 text-xs font-semibold capitalize sm:justify-self-end ${badgeClass}`}>
       {appointment.status || "pending"}
     </span>
   </div>
@@ -156,13 +156,13 @@ const Dashboard = () => {
   const noticePreview = useMemo(() => (notices || []).slice(0, 3), [notices]);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),linear-gradient(180deg,_#f8fbff_0%,_#eef4ff_100%)] p-4 md:p-6">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_28%),linear-gradient(180deg,_#f8fbff_0%,_#eef4ff_100%)] p-4 sm:p-6">
       <div className="space-y-5">
         <PageCard className="overflow-hidden bg-[linear-gradient(135deg,_#0f172a_0%,_#1d4ed8_55%,_#38bdf8_100%)] text-white">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm font-medium text-sky-100">Hospital Command Center</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight">Welcome back, {user?.email || "Admin"}</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Welcome back, {user?.email || "Admin"}</h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-sky-100/90">
                 Monitor staff, appointments, patient messages, and operational updates from one place.
               </p>
@@ -191,7 +191,7 @@ const Dashboard = () => {
         <div className="grid gap-5 xl:grid-cols-3">
           <div className="space-y-5 xl:col-span-2">
             <PageCard>
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Overview</h2>
                   <p className="text-sm text-slate-500">Primary hospital metrics with direct navigation.</p>
@@ -199,7 +199,7 @@ const Dashboard = () => {
                 <button
                   type="button"
                   onClick={() => navigate("/admin/profile")}
-                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
                 >
                   Manage profile
                 </button>
@@ -214,7 +214,7 @@ const Dashboard = () => {
 
             <div className="grid gap-5 lg:grid-cols-2">
               <PageCard>
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">Departments</h2>
                     <p className="text-sm text-slate-500">Quick glance at hospital units.</p>
@@ -228,9 +228,9 @@ const Dashboard = () => {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {departmentHighlights.length === 0 ? (
-                    <div className="col-span-2 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                    <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 sm:col-span-2">
                       No departments available.
                     </div>
                   ) : (
@@ -290,7 +290,7 @@ const Dashboard = () => {
             </div>
 
             <PageCard>
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Recent Appointments</h2>
                   <p className="text-sm text-slate-500">Latest patient bookings across the hospital.</p>
@@ -298,7 +298,7 @@ const Dashboard = () => {
                 <button
                   type="button"
                   onClick={() => navigate("/admin/appointments")}
-                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
                 >
                   Open schedule
                 </button>
@@ -322,7 +322,7 @@ const Dashboard = () => {
 
           <div className="space-y-5">
             <PageCard className="bg-[linear-gradient(180deg,_#eff6ff_0%,_#ffffff_100%)]">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Appointment Status</h2>
                   <p className="text-sm text-slate-500">Live appointment distribution.</p>
@@ -361,7 +361,7 @@ const Dashboard = () => {
             </PageCard>
 
             <PageCard>
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Hospital Feed</h2>
                   <p className="text-sm text-slate-500">Latest published notices.</p>
@@ -395,7 +395,7 @@ const Dashboard = () => {
 
             <PageCard className="bg-[linear-gradient(135deg,_#0f172a,_#1e293b)] text-white">
               <p className="text-sm font-medium text-slate-300">Admin Snapshot</p>
-              <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl bg-white/10 p-4">
                   <p className="text-2xl font-semibold">{doctors?.length || 0}</p>
                   <p className="mt-1 text-xs text-slate-300">Doctors listed</p>

@@ -15,9 +15,7 @@ import FormTextarea from "../ui/FormTextarea";
 import FormSelect from "../ui/FormSelect";
 import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
-import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
-import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const IMG_URL = import.meta.env.VITE_IMG_URL;
@@ -52,9 +50,9 @@ const Doctors = () => {
   const isSubmitting = isAddingDoctor || isUpdatingDoctor;
 
   const filtered = doctors.filter(
-    (d) =>
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.specialty.toLowerCase().includes(search.toLowerCase()),
+    (doctor) =>
+      doctor.name.toLowerCase().includes(search.toLowerCase()) ||
+      doctor.specialty.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openAdd = () => {
@@ -65,25 +63,25 @@ const Doctors = () => {
     setIsModalOpen(true);
   };
 
-  const openEdit = (doc) => {
+  const openEdit = (doctor) => {
     setIsAdding(false);
     setIsViewing(false);
-    setEditId(doc.id);
+    setEditId(doctor.id);
     setFormData({
-      name: doc.name,
-      specialty: doc.specialty,
-      experience: doc.experience || "",
-      description: doc.description || "",
-      display_order: doc.display_order || "",
-      department_id: doc.department_id || "",
+      name: doctor.name,
+      specialty: doctor.specialty,
+      experience: doctor.experience || "",
+      description: doctor.description || "",
+      display_order: doctor.display_order || "",
+      department_id: doctor.department_id || "",
     });
     setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const openView = (doc) => {
+  const openView = (doctor) => {
     setIsViewing(true);
-    setViewItem(doc);
+    setViewItem(doctor);
     setIsModalOpen(true);
   };
 
@@ -102,19 +100,26 @@ const Doctors = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const fd = new FormData();
-    Object.entries(formData).forEach(([k, v]) => {
-      if (v !== null && v !== undefined) fd.append(k, v);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        payload.append(key, value);
+      }
     });
-    if (imageFile) fd.append("image", imageFile);
+
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
     try {
       if (isAdding) {
-        await addDoctor(fd).unwrap();
+        await addDoctor(payload).unwrap();
         toast.success("Doctor added");
       } else {
-        await updateDoctor({ id: editId, body: fd }).unwrap();
+        await updateDoctor({ id: editId, body: payload }).unwrap();
         toast.success("Doctor updated");
       }
       setIsModalOpen(false);
@@ -129,29 +134,33 @@ const Doctors = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, row) => {
-    const val = e.target.value;
-    const doc = filtered.find(d => d.id === row.id);
-    if (!doc) return;
-    if (val === "Edit") openEdit(doc);
-    else if (val === "View") openView(doc);
-    else if (val === "Delete") handleDelete(doc.id);
-    e.target.value = "";
+  const handleAction = (event, row) => {
+    const selectedAction = event.target.value;
+    const doctor = filtered.find((item) => item.id === row.id);
+
+    if (!doctor) return;
+
+    if (selectedAction === "Edit") openEdit(doctor);
+    else if (selectedAction === "View") openView(doctor);
+    else if (selectedAction === "Delete") handleDelete(doctor.id);
+
+    event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Doctors</h1>
-        <div className="flex gap-3">
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
           <SearchBar
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by name or specialty..."
+            className="sm:w-72"
           />
-          <Button onClick={openAdd} variant="primary">
+          <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
             Add Doctor
           </Button>
         </div>
@@ -159,24 +168,28 @@ const Doctors = () => {
 
       <Table
         headers={["#", "Image", "Name", "Specialty", "Experience", "Department", "Display Order", "Action"]}
-        rows={filtered.map((doc, i) => ({
-          id: doc.id,
+        rows={filtered.map((doctor, index) => ({
+          id: doctor.id,
           cells: [
-            { content: i + 1, className: "text-slate-600" },
+            { content: index + 1, className: "text-slate-600" },
             {
-              content: doc.image ? (
-                <img src={`${IMG_URL}/${doc.image}`} alt={doc.name} className="w-10 h-10 rounded-full object-cover" />
+              content: doctor.image ? (
+                <img
+                  src={`${IMG_URL}/${doctor.image}`}
+                  alt={doctor.name}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                  {doc.name[0]}
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
+                  {doctor.name[0]}
                 </div>
               ),
             },
-            { content: doc.name, className: "font-medium text-slate-700" },
-            { content: doc.specialty, className: "text-slate-600" },
-            { content: doc.experience || "—", className: "text-slate-600" },
-            { content: doc.department_name || "—", className: "text-slate-600" },
-            { content: doc.display_order || "—", className: "font-medium text-slate-600" },
+            { content: doctor.name, className: "font-medium text-slate-700" },
+            { content: doctor.specialty, className: "text-slate-600" },
+            { content: doctor.experience || "-", className: "text-slate-600" },
+            { content: doctor.department_name || "-", className: "text-slate-600" },
+            { content: doctor.display_order || "-", className: "font-medium text-slate-600" },
           ],
         }))}
         actionOptions={actionOptions}
@@ -187,9 +200,7 @@ const Doctors = () => {
       <Modal
         show={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={
-          isViewing ? "Doctor Details" : isAdding ? "Add Doctor" : "Edit Doctor"
-        }
+        title={isViewing ? "Doctor Details" : isAdding ? "Add Doctor" : "Edit Doctor"}
         size="lg"
       >
         {isViewing ? (
@@ -198,7 +209,7 @@ const Doctors = () => {
               <img
                 src={`${IMG_URL}/${viewItem.image}`}
                 alt={viewItem.name}
-                className="w-20 h-20 rounded-full object-cover"
+                className="h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20"
               />
             )}
             {[
@@ -208,14 +219,14 @@ const Doctors = () => {
               ["Department", viewItem?.department_name],
               ["Display Order", viewItem?.display_order],
               ["Description", viewItem?.description],
-            ].map(([label, val]) => (
+            ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>
-                <p className="text-sm text-slate-800">{val || "—"}</p>
+                <p className="text-sm text-slate-800">{value || "-"}</p>
               </div>
             ))}
             <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
                 Close
               </Button>
             </div>
@@ -225,63 +236,58 @@ const Doctors = () => {
             <FormInput
               placeholder="Name *"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
               required
             />
             <FormInput
               placeholder="Specialty *"
               value={formData.specialty}
-              onChange={(e) =>
-                setFormData({ ...formData, specialty: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, specialty: event.target.value })}
               required
             />
             <FormInput
               placeholder="Experience (e.g. 5 years)"
               value={formData.experience}
-              onChange={(e) =>
-                setFormData({ ...formData, experience: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, experience: event.target.value })}
             />
             <FormTextarea
               placeholder="Description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
               rows={3}
             />
             <FormInput
               type="number"
               placeholder="Display Order"
               value={formData.display_order}
-              onChange={(e) =>
-                setFormData({ ...formData, display_order: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, display_order: event.target.value })}
             />
             <FormSelect
               placeholder="Select Department"
               value={formData.department_id}
-              onChange={(e) =>
-                setFormData({ ...formData, department_id: e.target.value })
-              }
-              options={departments.map((d) => ({ id: d.id, name: d.name }))}
+              onChange={(event) => setFormData({ ...formData, department_id: event.target.value })}
+              options={departments.map((department) => ({ id: department.id, name: department.name }))}
             />
             <FormImage
               label="Doctor Image"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(event) => setImageFile(event.target.files[0])}
             />
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 variant="secondary"
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" isLoading={isSubmitting} loadingText={isAdding ? "Adding..." : "Updating..."}>
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting}
+                loadingText={isAdding ? "Adding..." : "Updating..."}
+                className="w-full sm:w-auto"
+              >
                 {isAdding ? "Add" : "Update"}
               </Button>
             </div>

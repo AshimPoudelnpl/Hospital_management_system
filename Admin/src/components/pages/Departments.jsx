@@ -13,9 +13,7 @@ import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
 import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
-import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
-import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const IMG_URL = import.meta.env.VITE_IMG_URL;
@@ -37,15 +35,12 @@ const Departments = () => {
   const [search, setSearch] = useState("");
 
   const { data: departments = [], isLoading } = useGetDepartmentsQuery();
-  const [addDepartment, { isLoading: isAddingDept }] =
-    useAddDepartmentMutation();
-  const [updateDepartment, { isLoading: isUpdatingDept }] =
-    useUpdateDepartmentMutation();
-  const [deleteDepartment, { isLoading: isDeleting }] =
-    useDeleteDepartmentMutation();
+  const [addDepartment, { isLoading: isAddingDept }] = useAddDepartmentMutation();
+  const [updateDepartment, { isLoading: isUpdatingDept }] = useUpdateDepartmentMutation();
+  const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
 
-  const filtered = departments.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase()),
+  const filtered = departments.filter((department) =>
+    department.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openAdd = () => {
@@ -58,23 +53,23 @@ const Departments = () => {
     setIsModalOpen(true);
   };
 
-  const openEdit = (dept) => {
+  const openEdit = (department) => {
     setIsAdding(false);
     setIsViewing(false);
-    setEditId(dept.id);
+    setEditId(department.id);
     setFormData({
-      name: dept.name,
-      description: dept.description || "",
-      head_doctor: dept.head_doctor || "",
+      name: department.name,
+      description: department.description || "",
+      head_doctor: department.head_doctor || "",
     });
-    setServices((dept.services || []).map((s) => s.service_name));
+    setServices((department.services || []).map((service) => service.service_name));
     setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const openView = (dept) => {
+  const openView = (department) => {
     setIsViewing(true);
-    setViewItem(dept);
+    setViewItem(department);
     setIsModalOpen(true);
   };
 
@@ -94,33 +89,39 @@ const Departments = () => {
   };
 
   const addService = () => {
-    const s = serviceInput.trim();
-    if (s && !services.includes(s)) setServices([...services, s]);
+    const value = serviceInput.trim();
+    if (value && !services.includes(value)) {
+      setServices([...services, value]);
+    }
     setServiceInput("");
   };
 
-  const removeService = (s) => setServices(services.filter((x) => x !== s));
+  const removeService = (service) => {
+    setServices(services.filter((item) => item !== service));
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const fd = new FormData();
-    Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
-    fd.append("services", JSON.stringify(services));
-    if (imageFile) fd.append("image", imageFile);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = new FormData();
+    Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
+    payload.append("services", JSON.stringify(services));
+
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
     try {
       if (isAdding) {
-        await addDepartment(fd).unwrap();
+        await addDepartment(payload).unwrap();
         toast.success("Department added");
       } else {
-        await updateDepartment({ id: editId, body: fd }).unwrap();
+        await updateDepartment({ id: editId, body: payload }).unwrap();
         toast.success("Department updated");
       }
       setIsModalOpen(false);
     } catch (error) {
-      toast.error(
-        error?.data?.message ||
-          (isAdding ? "Failed to add" : "Failed to update"),
-      );
+      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
     }
   };
 
@@ -130,29 +131,33 @@ const Departments = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, row) => {
-    const val = e.target.value;
-    const dept = filtered.find(d => d.id === row.id);
-    if (!dept) return;
-    if (val === "Edit") openEdit(dept);
-    else if (val === "View") openView(dept);
-    else if (val === "Delete") handleDelete(dept.id);
-    e.target.value = "";
+  const handleAction = (event, row) => {
+    const selectedAction = event.target.value;
+    const department = filtered.find((item) => item.id === row.id);
+
+    if (!department) return;
+
+    if (selectedAction === "Edit") openEdit(department);
+    else if (selectedAction === "View") openView(department);
+    else if (selectedAction === "Delete") handleDelete(department.id);
+
+    event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Departments</h1>
-        <div className="flex gap-3">
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
           <SearchBar
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search departments..."
+            className="sm:w-72"
           />
-          <Button onClick={openAdd} variant="primary">
+          <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
             Add Department
           </Button>
         </div>
@@ -160,29 +165,26 @@ const Departments = () => {
 
       <Table
         headers={["#", "Image", "Name", "Head Doctor", "Services", "Action"]}
-        rows={filtered.map((dept, i) => ({
-          id: dept.id,
+        rows={filtered.map((department, index) => ({
+          id: department.id,
           cells: [
-            { content: i + 1, className: "text-slate-600" },
+            { content: index + 1, className: "text-slate-600" },
             {
-              content: dept.image ? (
+              content: department.image ? (
                 <img
-                  src={`${IMG_URL}/${dept.image}`}
-                  alt={dept.name}
-                  className="w-10 h-10 rounded object-cover"
+                  src={`${IMG_URL}/${department.image}`}
+                  alt={department.name}
+                  className="h-10 w-10 rounded object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-sm">
-                  {dept.name[0]}
+                <div className="flex h-10 w-10 items-center justify-center rounded bg-purple-100 text-sm font-bold text-purple-600">
+                  {department.name[0]}
                 </div>
               ),
             },
-            { content: dept.name, className: "font-medium text-slate-700" },
-            { content: dept.head_doctor || "—", className: "text-slate-600" },
-            {
-              content: dept.services?.length || 0,
-              className: "text-slate-600",
-            },
+            { content: department.name, className: "font-medium text-slate-700" },
+            { content: department.head_doctor || "-", className: "text-slate-600" },
+            { content: department.services?.length || 0, className: "text-slate-600" },
           ],
         }))}
         actionOptions={actionOptions}
@@ -193,13 +195,7 @@ const Departments = () => {
       <Modal
         show={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={
-          isViewing
-            ? "Department Details"
-            : isAdding
-              ? "Add Department"
-              : "Edit Department"
-        }
+        title={isViewing ? "Department Details" : isAdding ? "Add Department" : "Edit Department"}
         size="lg"
       >
         {isViewing ? (
@@ -208,29 +204,29 @@ const Departments = () => {
               <img
                 src={`${IMG_URL}/${viewItem.image}`}
                 alt={viewItem.name}
-                className="w-20 h-20 rounded object-cover"
+                className="h-16 w-16 rounded object-cover sm:h-20 sm:w-20"
               />
             )}
             {[
               ["Name", viewItem?.name],
               ["Head Doctor", viewItem?.head_doctor],
               ["Description", viewItem?.description],
-            ].map(([label, val]) => (
+            ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>
-                <p className="text-sm text-slate-800">{val || "—"}</p>
+                <p className="text-sm text-slate-800">{value || "-"}</p>
               </div>
             ))}
             <div>
               <p className="text-xs font-medium text-gray-500">Services</p>
-              <div className="flex flex-wrap gap-1 mt-1">
+              <div className="mt-1 flex flex-wrap gap-1">
                 {viewItem?.services?.length ? (
-                  viewItem.services.map((s) => (
+                  viewItem.services.map((service) => (
                     <span
-                      key={s.id}
-                      className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
+                      key={service.id}
+                      className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
                     >
-                      {s.service_name}
+                      {service.service_name}
                     </span>
                   ))
                 ) : (
@@ -239,7 +235,7 @@ const Departments = () => {
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
                 Close
               </Button>
             </div>
@@ -249,60 +245,51 @@ const Departments = () => {
             <FormInput
               placeholder="Department Name *"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
               required
             />
             <FormInput
               placeholder="Head Doctor"
               value={formData.head_doctor}
-              onChange={(e) =>
-                setFormData({ ...formData, head_doctor: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, head_doctor: event.target.value })}
             />
             <FormTextarea
               placeholder="Description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
               rows={3}
             />
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">
-                Services
-              </label>
-              <div className="flex gap-2">
+              <label className="mb-1 block text-xs text-gray-500">Services</label>
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   type="text"
                   placeholder="Add service..."
                   value={serviceInput}
-                  onChange={(e) => setServiceInput(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addService())
-                  }
-                  className="flex-1 p-2 border rounded-lg text-sm"
+                  onChange={(event) => setServiceInput(event.target.value)}
+                  onKeyDown={(event) => event.key === "Enter" && (event.preventDefault(), addService())}
+                  className="w-full flex-1 rounded-lg border p-2 text-sm"
                 />
                 <Button
                   type="button"
                   onClick={addService}
                   variant="secondary"
                   size="sm"
+                  className="w-full sm:w-auto"
                 >
                   Add
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {services.map((s) => (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {services.map((service) => (
                   <span
-                    key={s}
-                    className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full"
+                    key={service}
+                    className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
                   >
-                    {s}
+                    {service}
                     <button
                       type="button"
-                      onClick={() => removeService(s)}
+                      onClick={() => removeService(service)}
                       className="text-blue-400 hover:text-red-500"
                     >
                       &times;
@@ -313,13 +300,14 @@ const Departments = () => {
             </div>
             <FormImage
               label="Department Image"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(event) => setImageFile(event.target.files[0])}
             />
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 variant="secondary"
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -328,6 +316,7 @@ const Departments = () => {
                 variant="primary"
                 isLoading={isAddingDept || isUpdatingDept}
                 loadingText={isAdding ? "Adding..." : "Updating..."}
+                className="w-full sm:w-auto"
               >
                 {isAdding ? "Add" : "Update"}
               </Button>

@@ -8,10 +8,8 @@ import Modal from "../ui/DetailsModal";
 import ConfirmModal from "../ui/ConfirmModal";
 import Table from "../ui/Table";
 import SearchBar from "../ui/SearchBar";
-import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
 import Button from "../ui/Button";
-import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
@@ -28,13 +26,13 @@ const Appointments = () => {
   const [updateStatus] = useUpdateAppointmentStatusMutation();
   const [deleteAppointment, { isLoading: isDeleting }] = useDeleteAppointmentMutation();
 
-  const filtered = appointments.filter((a) => {
-    const matchSearch =
-      a.patient_name.toLowerCase().includes(search.toLowerCase()) ||
-      a.patient_email.toLowerCase().includes(search.toLowerCase()) ||
-      (a.doctor_name || "").toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter ? a.status === statusFilter : true;
-    return matchSearch && matchStatus;
+  const filtered = appointments.filter((appointment) => {
+    const matchesSearch =
+      appointment.patient_name.toLowerCase().includes(search.toLowerCase()) ||
+      appointment.patient_email.toLowerCase().includes(search.toLowerCase()) ||
+      (appointment.doctor_name || "").toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter ? appointment.status === statusFilter : true;
+    return matchesSearch && matchesStatus;
   });
 
   const handleStatusChange = async (id, status) => {
@@ -66,50 +64,72 @@ const Appointments = () => {
     { value: "Delete", label: "Delete" },
   ];
 
-  const handleAction = (e, a) => {
-    const val = e.target.value;
-    if (val === "View") {
-      setViewItem(a);
+  const handleAction = (event, row) => {
+    const selectedAction = event.target.value;
+    const appointment = filtered.find((item) => item.id === row.id);
+
+    if (!appointment) return;
+
+    if (selectedAction === "View") {
+      setViewItem(appointment);
       setIsModalOpen(true);
-    } else if (val === "Delete") handleDelete(a.id);
-    e.target.value = "";
+    } else if (selectedAction === "Delete") {
+      handleDelete(appointment.id);
+    }
+
+    event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Appointments</h1>
-        <div className="flex gap-3">
-          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search patient, doctor..." />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+          <SearchBar
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search patient, doctor..."
+            className="sm:w-72"
+          />
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            className="w-full rounded-lg border px-3 py-2 text-sm sm:w-44"
+          >
             <option value="">All Status</option>
-            {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       <Table
         headers={["#", "Patient", "Doctor", "Department", "Date", "Time", "Status", "Action"]}
-        rows={filtered.map((a, i) => ({
-          id: a.id,
+        rows={filtered.map((appointment, index) => ({
+          id: appointment.id,
           cells: [
-            { content: i + 1, className: "text-slate-600" },
-            { content: a.patient_name, className: "font-medium text-slate-700" },
-            { content: a.doctor_name || "—", className: "text-slate-600" },
-            { content: a.department_name || "—", className: "text-slate-600" },
-            { content: a.appointment_date, className: "text-slate-600" },
-            { content: a.appointment_time, className: "text-slate-600" },
+            { content: index + 1, className: "text-slate-600" },
+            { content: appointment.patient_name, className: "font-medium text-slate-700" },
+            { content: appointment.doctor_name || "-", className: "text-slate-600" },
+            { content: appointment.department_name || "-", className: "text-slate-600" },
+            { content: appointment.appointment_date, className: "text-slate-600" },
+            { content: appointment.appointment_time, className: "text-slate-600" },
             {
               content: (
                 <select
-                  value={a.status}
-                  onChange={(e) => handleStatusChange(a.id, e.target.value)}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-full border border-gray-300 cursor-pointer focus:outline-none bg-white text-slate-700"
+                  value={appointment.status}
+                  onChange={(event) => handleStatusChange(appointment.id, event.target.value)}
+                  className="min-w-[135px] rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none"
                 >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
                   ))}
                 </select>
               ),
@@ -121,10 +141,15 @@ const Appointments = () => {
         emptyMessage="No appointments found"
       />
 
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title="Appointment Details" size="lg">
+      <Modal
+        show={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Appointment Details"
+        size="lg"
+      >
         {viewItem && (
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
                 ["Patient Name", viewItem.patient_name],
                 ["Email", viewItem.patient_email],
@@ -134,10 +159,10 @@ const Appointments = () => {
                 ["Date", viewItem.appointment_date],
                 ["Time", viewItem.appointment_time],
                 ["Status", viewItem.status],
-              ].map(([label, val]) => (
+              ].map(([label, value]) => (
                 <div key={label}>
                   <p className="text-xs font-medium text-gray-500">{label}</p>
-                  <p className="text-sm text-slate-800">{val || "—"}</p>
+                  <p className="text-sm text-slate-800">{value || "-"}</p>
                 </div>
               ))}
             </div>
@@ -148,7 +173,9 @@ const Appointments = () => {
               </div>
             )}
             <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
+                Close
+              </Button>
             </div>
           </div>
         )}

@@ -13,9 +13,7 @@ import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
 import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
-import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
-import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const IMG_URL = import.meta.env.VITE_IMG_URL;
@@ -39,8 +37,8 @@ const Notices = () => {
   const [updateNotice] = useUpdateNoticeMutation();
   const [deleteNotice, { isLoading: isDeleting }] = useDeleteNoticeMutation();
 
-  const filtered = notices.filter((n) =>
-    n.title.toLowerCase().includes(search.toLowerCase())
+  const filtered = notices.filter((notice) =>
+    notice.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openAdd = () => {
@@ -81,18 +79,22 @@ const Notices = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const fd = new FormData();
-    fd.append("title", formData.title);
-    fd.append("content", formData.content);
-    if (imageFile) fd.append("image", imageFile);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = new FormData();
+    payload.append("title", formData.title);
+    payload.append("content", formData.content);
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
     try {
       if (isAdding) {
-        await addNotice(fd).unwrap();
+        await addNotice(payload).unwrap();
         toast.success("Notice added");
       } else {
-        await updateNotice({ id: editId, body: fd }).unwrap();
+        await updateNotice({ id: editId, body: payload }).unwrap();
         toast.success("Notice updated");
       }
       setIsModalOpen(false);
@@ -107,44 +109,60 @@ const Notices = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, row) => {
-    const val = e.target.value;
-    const notice = filtered.find(n => n.id === row.id);
+  const handleAction = (event, row) => {
+    const selectedAction = event.target.value;
+    const notice = filtered.find((item) => item.id === row.id);
+
     if (!notice) return;
-    if (val === "Edit") openEdit(notice);
-    else if (val === "View") openView(notice);
-    else if (val === "Delete") handleDelete(notice.id);
-    e.target.value = "";
+
+    if (selectedAction === "Edit") openEdit(notice);
+    else if (selectedAction === "View") openView(notice);
+    else if (selectedAction === "Delete") handleDelete(notice.id);
+
+    event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Notices</h1>
-        <div className="flex gap-3">
-          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search notices..." />
-          <Button onClick={openAdd} variant="primary">Add Notice</Button>
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+          <SearchBar
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search notices..."
+            className="sm:w-72"
+          />
+          <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
+            Add Notice
+          </Button>
         </div>
       </div>
 
       <Table
         headers={["#", "Image", "Title", "Content", "Created By", "Date", "Action"]}
-        rows={filtered.map((notice, i) => ({
+        rows={filtered.map((notice, index) => ({
           id: notice.id,
           cells: [
-            { content: i + 1, className: "text-slate-600" },
+            { content: index + 1, className: "text-slate-600" },
             {
               content: notice.image ? (
-                <img src={`${IMG_URL}/${notice.image}`} alt={notice.title} className="w-10 h-10 rounded object-cover" />
+                <img
+                  src={`${IMG_URL}/${notice.image}`}
+                  alt={notice.title}
+                  className="h-10 w-10 rounded object-cover"
+                />
               ) : (
-                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
+                <div className="flex h-10 w-10 items-center justify-center rounded bg-gray-200 text-xs text-gray-400">
+                  No image
+                </div>
               ),
             },
             { content: notice.title, className: "font-medium text-slate-700" },
-            { content: notice.content, className: "text-slate-500 max-w-xs truncate" },
-            { content: notice.created_by_name || "—", className: "text-slate-600" },
+            { content: notice.content, className: "max-w-xs truncate text-slate-500" },
+            { content: notice.created_by_name || "-", className: "text-slate-600" },
             { content: new Date(notice.created_at).toLocaleDateString(), className: "text-slate-600" },
           ],
         }))}
@@ -153,12 +171,21 @@ const Notices = () => {
         emptyMessage="No notices found"
       />
 
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Notice Details" : isAdding ? "Add Notice" : "Edit Notice"} size="lg">
+      <Modal
+        show={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={isViewing ? "Notice Details" : isAdding ? "Add Notice" : "Edit Notice"}
+        size="lg"
+      >
         {isViewing ? (
           <div className="space-y-3">
             {viewItem?.image && (
               <div>
-                <img src={`${IMG_URL}/${viewItem.image}`} alt={viewItem.title} className="w-full h-48 rounded object-cover mb-3" />
+                <img
+                  src={`${IMG_URL}/${viewItem.image}`}
+                  alt={viewItem.title}
+                  className="h-40 w-full rounded object-cover sm:h-48"
+                />
               </div>
             )}
             <div>
@@ -167,32 +194,51 @@ const Notices = () => {
             </div>
             <div>
               <p className="text-xs font-medium text-gray-500">Content</p>
-              <p className="text-sm text-slate-800 whitespace-pre-wrap">{viewItem?.content}</p>
+              <p className="whitespace-pre-wrap text-sm text-slate-800">{viewItem?.content}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-gray-500">Created By</p>
-              <p className="text-sm text-slate-800">{viewItem?.created_by_name || "—"}</p>
+              <p className="text-sm text-slate-800">{viewItem?.created_by_name || "-"}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-gray-500">Date</p>
-              <p className="text-sm text-slate-800">{viewItem?.created_at ? new Date(viewItem.created_at).toLocaleString() : "—"}</p>
+              <p className="text-sm text-slate-800">
+                {viewItem?.created_at ? new Date(viewItem.created_at).toLocaleString() : "-"}
+              </p>
             </div>
             <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
+                Close
+              </Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
-            <FormInput placeholder="Title *" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-            <FormTextarea placeholder="Content *" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={5} required />
+            <FormInput
+              placeholder="Title *"
+              value={formData.title}
+              onChange={(event) => setFormData({ ...formData, title: event.target.value })}
+              required
+            />
+            <FormTextarea
+              placeholder="Content *"
+              value={formData.content}
+              onChange={(event) => setFormData({ ...formData, content: event.target.value })}
+              rows={5}
+              required
+            />
             <FormImage
               label="Notice Image"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(event) => setImageFile(event.target.files[0])}
               currentImage={formData.image && !imageFile ? formData.image : null}
             />
-            <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
-              <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
+            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" className="w-full sm:w-auto">
+                {isAdding ? "Add" : "Update"}
+              </Button>
             </div>
           </form>
         )}

@@ -13,9 +13,7 @@ import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
 import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
-import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
-import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const IMG_URL = import.meta.env.VITE_IMG_URL;
@@ -39,8 +37,8 @@ const Services = () => {
   const [updateService] = useUpdateServiceMutation();
   const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
-  const filtered = services.filter((s) =>
-    s.title.toLowerCase().includes(search.toLowerCase())
+  const filtered = services.filter((service) =>
+    service.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openAdd = () => {
@@ -51,18 +49,18 @@ const Services = () => {
     setIsModalOpen(true);
   };
 
-  const openEdit = (svc) => {
+  const openEdit = (service) => {
     setIsAdding(false);
     setIsViewing(false);
-    setEditId(svc.id);
-    setFormData({ title: svc.title, description: svc.description || "" });
+    setEditId(service.id);
+    setFormData({ title: service.title, description: service.description || "" });
     setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const openView = (svc) => {
+  const openView = (service) => {
     setIsViewing(true);
-    setViewItem(svc);
+    setViewItem(service);
     setIsModalOpen(true);
   };
 
@@ -81,17 +79,21 @@ const Services = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const fd = new FormData();
-    Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
-    if (imageFile) fd.append("image", imageFile);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = new FormData();
+    Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
+    if (imageFile) {
+      payload.append("image", imageFile);
+    }
+
     try {
       if (isAdding) {
-        await addService(fd).unwrap();
+        await addService(payload).unwrap();
         toast.success("Service added");
       } else {
-        await updateService({ id: editId, body: fd }).unwrap();
+        await updateService({ id: editId, body: payload }).unwrap();
         toast.success("Service updated");
       }
       setIsModalOpen(false);
@@ -106,45 +108,59 @@ const Services = () => {
     { value: "View", label: "View" },
   ];
 
-  const handleAction = (e, row) => {
-    const val = e.target.value;
-    const svc = filtered.find(s => s.id === row.id);
-    if (!svc) return;
-    if (val === "Edit") openEdit(svc);
-    else if (val === "View") openView(svc);
-    else if (val === "Delete") handleDelete(svc.id);
-    e.target.value = "";
+  const handleAction = (event, row) => {
+    const selectedAction = event.target.value;
+    const service = filtered.find((item) => item.id === row.id);
+
+    if (!service) return;
+
+    if (selectedAction === "Edit") openEdit(service);
+    else if (selectedAction === "View") openView(service);
+    else if (selectedAction === "Delete") handleDelete(service.id);
+
+    event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Services</h1>
-        <div className="flex gap-3">
-          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search services..." />
-          <Button onClick={openAdd} variant="primary">Add Service</Button>
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+          <SearchBar
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search services..."
+            className="sm:w-72"
+          />
+          <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
+            Add Service
+          </Button>
         </div>
       </div>
 
       <Table
         headers={["#", "Image", "Title", "Description", "Action"]}
-        rows={filtered.map((svc, i) => ({
-          id: svc.id,
+        rows={filtered.map((service, index) => ({
+          id: service.id,
           cells: [
-            { content: i + 1, className: "text-slate-600" },
+            { content: index + 1, className: "text-slate-600" },
             {
-              content: svc.image ? (
-                <img src={`${IMG_URL}/${svc.image}`} alt={svc.title} className="w-10 h-10 rounded object-cover" />
+              content: service.image ? (
+                <img
+                  src={`${IMG_URL}/${service.image}`}
+                  alt={service.title}
+                  className="h-10 w-10 rounded object-cover"
+                />
               ) : (
-                <div className="w-10 h-10 rounded bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-sm">
-                  {svc.title[0]}
+                <div className="flex h-10 w-10 items-center justify-center rounded bg-teal-100 text-sm font-bold text-teal-600">
+                  {service.title[0]}
                 </div>
               ),
             },
-            { content: svc.title, className: "font-medium text-slate-700" },
-            { content: svc.description || "—", className: "text-slate-500 max-w-xs truncate" },
+            { content: service.title, className: "font-medium text-slate-700" },
+            { content: service.description || "-", className: "max-w-xs truncate text-slate-500" },
           ],
         }))}
         actionOptions={actionOptions}
@@ -152,31 +168,61 @@ const Services = () => {
         emptyMessage="No services found"
       />
 
-      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title={isViewing ? "Service Details" : isAdding ? "Add Service" : "Edit Service"} size="lg">
+      <Modal
+        show={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={isViewing ? "Service Details" : isAdding ? "Add Service" : "Edit Service"}
+        size="lg"
+      >
         {isViewing ? (
           <div className="space-y-3">
-            {viewItem?.image && <img src={`${IMG_URL}/${viewItem.image}`} alt={viewItem.title} className="w-20 h-20 rounded object-cover" />}
-            {[["Title", viewItem?.title], ["Description", viewItem?.description]].map(([label, val]) => (
+            {viewItem?.image && (
+              <img
+                src={`${IMG_URL}/${viewItem.image}`}
+                alt={viewItem.title}
+                className="h-16 w-16 rounded object-cover sm:h-20 sm:w-20"
+              />
+            )}
+            {[
+              ["Title", viewItem?.title],
+              ["Description", viewItem?.description],
+            ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>
-                <p className="text-sm text-slate-800">{val || "—"}</p>
+                <p className="text-sm text-slate-800">{value || "-"}</p>
               </div>
             ))}
             <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary">Close</Button>
+              <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
+                Close
+              </Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
-            <FormInput placeholder="Title *" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-            <FormTextarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
+            <FormInput
+              placeholder="Title *"
+              value={formData.title}
+              onChange={(event) => setFormData({ ...formData, title: event.target.value })}
+              required
+            />
+            <FormTextarea
+              placeholder="Description"
+              value={formData.description}
+              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
+              rows={3}
+            />
             <FormImage
               label="Service Image"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(event) => setImageFile(event.target.files[0])}
             />
-            <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary">Cancel</Button>
-              <Button type="submit" variant="primary">{isAdding ? "Add" : "Update"}</Button>
+            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" className="w-full sm:w-auto">
+                {isAdding ? "Add" : "Update"}
+              </Button>
             </div>
           </form>
         )}

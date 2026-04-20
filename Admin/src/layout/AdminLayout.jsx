@@ -1,15 +1,14 @@
-import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/ui/Sidebar';
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/ui/Sidebar";
 
 const AdminLayout = () => {
   return (
-    <div className="relative bg-[#f7f6f9] h-full min-h-screen">
-      <div className="flex items-start">
+    <div className="min-h-screen bg-[#f7f6f9]">
+      <div className="flex min-h-screen items-start">
         <Sidebar />
 
-        <section className="main-content w-full px-6">
-          {/* Page content */}
-          <div className="my-6 px-2">
+        <section className="main-content min-w-0 flex-1 pt-16 lg:pt-0">
+          <div className="pb-4 lg:pb-6">
             <Outlet />
           </div>
         </section>
