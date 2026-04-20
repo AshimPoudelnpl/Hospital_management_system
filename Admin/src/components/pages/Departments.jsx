@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 
 const IMG_URL = import.meta.env.VITE_IMG_URL;
 
-const EMPTY = { name: "", description: "", head_doctor: "" };
+const EMPTY = { name: "", description: "", display_order: "" };
 
 const Departments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,47 +29,44 @@ const Departments = () => {
   const [editId, setEditId] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [formData, setFormData] = useState(EMPTY);
-  const [serviceInput, setServiceInput] = useState("");
-  const [services, setServices] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [search, setSearch] = useState("");
 
   const { data: departments = [], isLoading } = useGetDepartmentsQuery();
-  const [addDepartment, { isLoading: isAddingDept }] = useAddDepartmentMutation();
-  const [updateDepartment, { isLoading: isUpdatingDept }] = useUpdateDepartmentMutation();
+  const [addDepartment, { isLoading: isAdding2 }] = useAddDepartmentMutation();
+  const [updateDepartment, { isLoading: isUpdating }] = useUpdateDepartmentMutation();
   const [deleteDepartment, { isLoading: isDeleting }] = useDeleteDepartmentMutation();
 
-  const filtered = departments.filter((department) =>
-    department.name.toLowerCase().includes(search.toLowerCase()),
+  const isSubmitting = isAdding2 || isUpdating;
+
+  const filtered = departments.filter((dept) =>
+    dept.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const openAdd = () => {
     setIsAdding(true);
     setIsViewing(false);
     setFormData(EMPTY);
-    setServices([]);
-    setServiceInput("");
     setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const openEdit = (department) => {
+  const openEdit = (dept) => {
     setIsAdding(false);
     setIsViewing(false);
-    setEditId(department.id);
+    setEditId(dept.id);
     setFormData({
-      name: department.name,
-      description: department.description || "",
-      head_doctor: department.head_doctor || "",
+      name: dept.name,
+      description: dept.description || "",
+      display_order: dept.display_order || "",
     });
-    setServices((department.services || []).map((service) => service.service_name));
     setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const openView = (department) => {
+  const openView = (dept) => {
     setIsViewing(true);
-    setViewItem(department);
+    setViewItem(dept);
     setIsModalOpen(true);
   };
 
@@ -88,28 +85,13 @@ const Departments = () => {
     }
   };
 
-  const addService = () => {
-    const value = serviceInput.trim();
-    if (value && !services.includes(value)) {
-      setServices([...services, value]);
-    }
-    setServiceInput("");
-  };
-
-  const removeService = (service) => {
-    setServices(services.filter((item) => item !== service));
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => payload.append(key, value));
-    payload.append("services", JSON.stringify(services));
-
-    if (imageFile) {
-      payload.append("image", imageFile);
-    }
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) payload.append(key, value);
+    });
+    if (imageFile) payload.append("image", imageFile);
 
     try {
       if (isAdding) {
@@ -121,7 +103,7 @@ const Departments = () => {
       }
       setIsModalOpen(false);
     } catch (error) {
-      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
+      toast.error(error?.data?.message || "Failed");
     }
   };
 
@@ -132,30 +114,26 @@ const Departments = () => {
   ];
 
   const handleAction = (event, row) => {
-    const selectedAction = event.target.value;
-    const department = filtered.find((item) => item.id === row.id);
-
-    if (!department) return;
-
-    if (selectedAction === "Edit") openEdit(department);
-    else if (selectedAction === "View") openView(department);
-    else if (selectedAction === "Delete") handleDelete(department.id);
-
+    const action = event.target.value;
+    const dept = filtered.find((item) => item.id === row.id);
+    if (!dept) return;
+    if (action === "Edit") openEdit(dept);
+    else if (action === "View") openView(dept);
+    else if (action === "Delete") handleDelete(dept.id);
     event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Departments</h1>
-        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col gap-3 mb-4 sm:mb-6 sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Departments</h1>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
           <SearchBar
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search departments..."
-            className="sm:w-72"
           />
           <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
             Add Department
@@ -164,27 +142,27 @@ const Departments = () => {
       </div>
 
       <Table
-        headers={["#", "Image", "Name", "Head Doctor", "Services", "Action"]}
-        rows={filtered.map((department, index) => ({
-          id: department.id,
+        headers={["#", "Image", "Name", "Description", "Display Order", "Action"]}
+        rows={filtered.map((dept, index) => ({
+          id: dept.id,
           cells: [
-            { content: index + 1, className: "text-slate-600" },
+            { content: index + 1 },
             {
-              content: department.image ? (
+              content: dept.image ? (
                 <img
-                  src={`${IMG_URL}/${department.image}`}
-                  alt={department.name}
+                  src={`${IMG_URL}/${dept.image}`}
+                  alt={dept.name}
                   className="h-10 w-10 rounded object-cover"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded bg-purple-100 text-sm font-bold text-purple-600">
-                  {department.name[0]}
+                <div className="flex h-10 w-10 items-center justify-center rounded bg-blue-100 text-sm font-bold text-blue-600">
+                  {dept.name[0]}
                 </div>
               ),
             },
-            { content: department.name, className: "font-medium text-slate-700" },
-            { content: department.head_doctor || "-", className: "text-slate-600" },
-            { content: department.services?.length || 0, className: "text-slate-600" },
+            { content: dept.name, className: "font-medium" },
+            { content: dept.description?.substring(0, 50) || "-" },
+            { content: dept.display_order || "-" },
           ],
         }))}
         actionOptions={actionOptions}
@@ -201,39 +179,18 @@ const Departments = () => {
         {isViewing ? (
           <div className="space-y-3">
             {viewItem?.image && (
-              <img
-                src={`${IMG_URL}/${viewItem.image}`}
-                alt={viewItem.name}
-                className="h-16 w-16 rounded object-cover sm:h-20 sm:w-20"
-              />
+              <img src={`${IMG_URL}/${viewItem.image}`} alt={viewItem.name} className="h-20 w-20 rounded object-cover" />
             )}
             {[
               ["Name", viewItem?.name],
-              ["Head Doctor", viewItem?.head_doctor],
               ["Description", viewItem?.description],
+              ["Display Order", viewItem?.display_order],
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>
                 <p className="text-sm text-slate-800">{value || "-"}</p>
               </div>
             ))}
-            <div>
-              <p className="text-xs font-medium text-gray-500">Services</p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {viewItem?.services?.length ? (
-                  viewItem.services.map((service) => (
-                    <span
-                      key={service.id}
-                      className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
-                    >
-                      {service.service_name}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-sm text-slate-400">None</p>
-                )}
-              </div>
-            </div>
             <div className="flex justify-end pt-2">
               <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
                 Close
@@ -245,76 +202,30 @@ const Departments = () => {
             <FormInput
               placeholder="Department Name *"
               value={formData.name}
-              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-            />
-            <FormInput
-              placeholder="Head Doctor"
-              value={formData.head_doctor}
-              onChange={(event) => setFormData({ ...formData, head_doctor: event.target.value })}
             />
             <FormTextarea
               placeholder="Description"
               value={formData.description}
-              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
             />
-            <div>
-              <label className="mb-1 block text-xs text-gray-500">Services</label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  type="text"
-                  placeholder="Add service..."
-                  value={serviceInput}
-                  onChange={(event) => setServiceInput(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && (event.preventDefault(), addService())}
-                  className="w-full flex-1 rounded-lg border p-2 text-sm"
-                />
-                <Button
-                  type="button"
-                  onClick={addService}
-                  variant="secondary"
-                  size="sm"
-                  className="w-full sm:w-auto"
-                >
-                  Add
-                </Button>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {services.map((service) => (
-                  <span
-                    key={service}
-                    className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
-                  >
-                    {service}
-                    <button
-                      type="button"
-                      onClick={() => removeService(service)}
-                      className="text-blue-400 hover:text-red-500"
-                    >
-                      &times;
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-            <FormImage
-              label="Department Image"
-              onChange={(event) => setImageFile(event.target.files[0])}
+            <FormInput
+              type="number"
+              placeholder="Display Order"
+              value={formData.display_order}
+              onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
             />
+            <FormImage label="Department Image" onChange={(e) => setImageFile(e.target.files[0])} />
             <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                variant="secondary"
-                className="w-full sm:w-auto"
-              >
+              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="primary"
-                isLoading={isAddingDept || isUpdatingDept}
+                isLoading={isSubmitting}
                 loadingText={isAdding ? "Adding..." : "Updating..."}
                 className="w-full sm:w-auto"
               >
@@ -330,7 +241,7 @@ const Departments = () => {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Department"
-        message="Are you sure you want to delete this department? This action cannot be undone."
+        message="Are you sure you want to delete this department?"
         confirmText="Delete"
         isLoading={isDeleting}
         variant="danger"

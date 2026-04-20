@@ -6,19 +6,12 @@ const StatsCard = ({ label, value, icon: Icon, color = "blue" }) => {
     yellow: "text-yellow-600",
   };
 
-  const iconClasses = {
-    blue: "text-blue-400",
-    green: "text-green-400",
-    red: "text-red-400",
-    yellow: "text-yellow-400",
-  };
-
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <p className="text-gray-600 text-xs font-medium mb-1">{label}</p>
       <div className="flex items-center gap-2">
-        <p className={`text-2xl font-bold ${colorClasses[color] || colorClasses.blue}`}>{value}</p>
-        {Icon && <Icon className={iconClasses[color] || iconClasses.blue} size={16} />}
+        <p className={`text-2xl font-bold ${colorClasses[color]}`}>{value}</p>
+        {Icon && <Icon className={`text-${color}-400`} size={16} />}
       </div>
     </div>
   );

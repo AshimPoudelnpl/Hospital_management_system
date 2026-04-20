@@ -7,12 +7,10 @@ import {
 import Modal from "../ui/DetailsModal";
 import ConfirmModal from "../ui/ConfirmModal";
 import Table from "../ui/Table";
+import Button from "../ui/Button";
 import SearchBar from "../ui/SearchBar";
 import Skeleton from "../shared/Skeleton";
-import Button from "../ui/Button";
 import { toast } from "react-toastify";
-
-const STATUS_OPTIONS = ["pending", "confirmed", "completed", "cancelled"];
 
 const Appointments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,28 +18,20 @@ const Appointments = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
 
   const { data: appointments = [], isLoading } = useGetAppointmentsQuery();
-  const [updateStatus] = useUpdateAppointmentStatusMutation();
+  const [updateStatus, { isLoading: isUpdating }] = useUpdateAppointmentStatusMutation();
   const [deleteAppointment, { isLoading: isDeleting }] = useDeleteAppointmentMutation();
 
-  const filtered = appointments.filter((appointment) => {
-    const matchesSearch =
-      appointment.patient_name.toLowerCase().includes(search.toLowerCase()) ||
-      appointment.patient_email.toLowerCase().includes(search.toLowerCase()) ||
-      (appointment.doctor_name || "").toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter ? appointment.status === statusFilter : true;
-    return matchesSearch && matchesStatus;
-  });
+  const filtered = appointments.filter(
+    (apt) =>
+      apt.patient_name?.toLowerCase().includes(search.toLowerCase()) ||
+      apt.doctor_name?.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const handleStatusChange = async (id, status) => {
-    try {
-      await updateStatus({ id, status }).unwrap();
-      toast.success("Status updated");
-    } catch {
-      toast.error("Failed to update status");
-    }
+  const openView = (apt) => {
+    setViewItem(apt);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -59,81 +49,71 @@ const Appointments = () => {
     }
   };
 
+  const handleStatusChange = async (id, status) => {
+    try {
+      await updateStatus({ id, status }).unwrap();
+      toast.success("Status updated");
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to update status");
+    }
+  };
+
   const actionOptions = [
     { value: "View", label: "View" },
+    { value: "Confirmed", label: "Mark Confirmed" },
+    { value: "Completed", label: "Mark Completed" },
+    { value: "Cancelled", label: "Mark Cancelled" },
     { value: "Delete", label: "Delete" },
   ];
 
   const handleAction = (event, row) => {
-    const selectedAction = event.target.value;
-    const appointment = filtered.find((item) => item.id === row.id);
+    const action = event.target.value;
+    const apt = filtered.find((item) => item.id === row.id);
+    if (!apt) return;
 
-    if (!appointment) return;
-
-    if (selectedAction === "View") {
-      setViewItem(appointment);
-      setIsModalOpen(true);
-    } else if (selectedAction === "Delete") {
-      handleDelete(appointment.id);
+    if (action === "View") openView(apt);
+    else if (action === "Delete") handleDelete(apt.id);
+    else if (["Confirmed", "Completed", "Cancelled"].includes(action)) {
+      handleStatusChange(apt.id, action.toLowerCase());
     }
-
     event.target.value = "";
+  };
+
+  const getStatusBadge = (status) => {
+    const colors = {
+      pending: "bg-yellow-100 text-yellow-700",
+      confirmed: "bg-blue-100 text-blue-700",
+      completed: "bg-green-100 text-green-700",
+      cancelled: "bg-red-100 text-red-700",
+    };
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[status] || "bg-gray-100 text-gray-700"}`}>
+        {status}
+      </span>
+    );
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Appointments</h1>
-        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-          <SearchBar
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search patient, doctor..."
-            className="sm:w-72"
-          />
-          <select
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm sm:w-44"
-          >
-            <option value="">All Status</option>
-            {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col gap-3 mb-4 sm:mb-6 sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Appointments</h1>
+        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search appointments..." />
       </div>
 
       <Table
         headers={["#", "Patient", "Doctor", "Department", "Date", "Time", "Status", "Action"]}
-        rows={filtered.map((appointment, index) => ({
-          id: appointment.id,
+        rows={filtered.map((apt, index) => ({
+          id: apt.id,
           cells: [
-            { content: index + 1, className: "text-slate-600" },
-            { content: appointment.patient_name, className: "font-medium text-slate-700" },
-            { content: appointment.doctor_name || "-", className: "text-slate-600" },
-            { content: appointment.department_name || "-", className: "text-slate-600" },
-            { content: appointment.appointment_date, className: "text-slate-600" },
-            { content: appointment.appointment_time, className: "text-slate-600" },
-            {
-              content: (
-                <select
-                  value={appointment.status}
-                  onChange={(event) => handleStatusChange(appointment.id, event.target.value)}
-                  className="min-w-[135px] rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none"
-                >
-                  {STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              ),
-            },
+            { content: index + 1 },
+            { content: apt.patient_name || "-", className: "font-medium" },
+            { content: apt.doctor_name || "-" },
+            { content: apt.department_name || "-" },
+            { content: apt.appointment_date || "-" },
+            { content: apt.appointment_time || "-" },
+            { content: getStatusBadge(apt.status) },
           ],
         }))}
         actionOptions={actionOptions}
@@ -141,44 +121,30 @@ const Appointments = () => {
         emptyMessage="No appointments found"
       />
 
-      <Modal
-        show={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Appointment Details"
-        size="lg"
-      >
-        {viewItem && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {[
-                ["Patient Name", viewItem.patient_name],
-                ["Email", viewItem.patient_email],
-                ["Phone", viewItem.patient_phone],
-                ["Doctor", viewItem.doctor_name],
-                ["Department", viewItem.department_name],
-                ["Date", viewItem.appointment_date],
-                ["Time", viewItem.appointment_time],
-                ["Status", viewItem.status],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <p className="text-xs font-medium text-gray-500">{label}</p>
-                  <p className="text-sm text-slate-800">{value || "-"}</p>
-                </div>
-              ))}
+      <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)} title="Appointment Details" size="lg">
+        <div className="space-y-3">
+          {[
+            ["Patient Name", viewItem?.patient_name],
+            ["Patient Email", viewItem?.patient_email],
+            ["Patient Phone", viewItem?.patient_phone],
+            ["Doctor", viewItem?.doctor_name],
+            ["Department", viewItem?.department_name],
+            ["Date", viewItem?.appointment_date],
+            ["Time", viewItem?.appointment_time],
+            ["Status", viewItem?.status],
+            ["Message", viewItem?.message],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <p className="text-xs font-medium text-gray-500">{label}</p>
+              <p className="text-sm text-slate-800">{value || "-"}</p>
             </div>
-            {viewItem.message && (
-              <div>
-                <p className="text-xs font-medium text-gray-500">Message</p>
-                <p className="text-sm text-slate-800">{viewItem.message}</p>
-              </div>
-            )}
-            <div className="flex justify-end pt-2">
-              <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
-                Close
-              </Button>
-            </div>
+          ))}
+          <div className="flex justify-end pt-2">
+            <Button onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
+              Close
+            </Button>
           </div>
-        )}
+        </div>
       </Modal>
 
       <ConfirmModal
@@ -186,7 +152,7 @@ const Appointments = () => {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Appointment"
-        message="Are you sure you want to delete this appointment? This action cannot be undone."
+        message="Are you sure you want to delete this appointment?"
         confirmText="Delete"
         isLoading={isDeleting}
         variant="danger"

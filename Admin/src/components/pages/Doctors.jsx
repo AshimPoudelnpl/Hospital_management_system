@@ -15,7 +15,9 @@ import FormTextarea from "../ui/FormTextarea";
 import FormSelect from "../ui/FormSelect";
 import FormImage from "../ui/FormImage";
 import SearchBar from "../ui/SearchBar";
+import Loading from "../shared/Loading";
 import Skeleton from "../shared/Skeleton";
+import Select from "../ui/Select";
 import { toast } from "react-toastify";
 
 const IMG_URL = import.meta.env.VITE_IMG_URL;
@@ -150,15 +152,14 @@ const Doctors = () => {
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Doctors</h1>
-        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col gap-3 mb-4 sm:mb-6 sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Doctors</h1>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
           <SearchBar
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search by name or specialty..."
-            className="sm:w-72"
           />
           <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
             Add Doctor

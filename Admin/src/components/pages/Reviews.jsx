@@ -1,30 +1,23 @@
 import { useState } from "react";
 import {
   useGetReviewsQuery,
-  useDeleteReviewMutation,
-  useUpdateReviewMutation,
   useAddReviewMutation,
-} from "@Redux/features/reviewSlice.js";
-import Skeleton from "../shared/Skeleton";
+  useUpdateReviewMutation,
+  useDeleteReviewMutation,
+} from "../../Redux/features/reviewSlice";
 import Modal from "../ui/DetailsModal";
 import ConfirmModal from "../ui/ConfirmModal";
+import Table from "../ui/Table";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import FormTextarea from "../ui/FormTextarea";
-import FormSelect from "../ui/FormSelect";
-import StatsCard from "../ui/StatsCard";
 import SearchBar from "../ui/SearchBar";
-import Table from "../ui/Table";
-import { FaStar } from "react-icons/fa";
+import Skeleton from "../shared/Skeleton";
 import { toast } from "react-toastify";
 
-const EMPTY = { name: "", rating: 5, text: "" };
+const EMPTY = { name: "", role: "", rating: 5, text: "" };
 
 const Reviews = () => {
-  const { data: reviews = [], isLoading } = useGetReviewsQuery();
-  const [addReview] = useAddReviewMutation();
-  const [deleteReview, { isLoading: isDeleting }] = useDeleteReviewMutation();
-  const [updateReview] = useUpdateReviewMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
@@ -33,8 +26,15 @@ const Reviews = () => {
   const [editId, setEditId] = useState(null);
   const [viewItem, setViewItem] = useState(null);
   const [formData, setFormData] = useState(EMPTY);
-  const [filterRating, setFilterRating] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [search, setSearch] = useState("");
+
+  const { data: reviews = [], isLoading } = useGetReviewsQuery();
+  const [addReview, { isLoading: isAdding2 }] = useAddReviewMutation();
+  const [updateReview, { isLoading: isUpdating }] = useUpdateReviewMutation();
+  const [deleteReview, { isLoading: isDeleting }] = useDeleteReviewMutation();
+
+  const isSubmitting = isAdding2 || isUpdating;
+  const filtered = reviews.filter((r) => r.name?.toLowerCase().includes(search.toLowerCase()));
 
   const openAdd = () => {
     setIsAdding(true);
@@ -49,8 +49,9 @@ const Reviews = () => {
     setEditId(review.id);
     setFormData({
       name: review.name,
-      rating: review.rating,
-      text: review.text || review.review_text,
+      role: review.role || "",
+      rating: review.rating || 5,
+      text: review.text || "",
     });
     setIsModalOpen(true);
   };
@@ -83,29 +84,14 @@ const Reviews = () => {
         await addReview(formData).unwrap();
         toast.success("Review added");
       } else {
-        await updateReview({ id: editId, data: formData }).unwrap();
+        await updateReview({ id: editId, body: formData }).unwrap();
         toast.success("Review updated");
       }
       setIsModalOpen(false);
     } catch (error) {
-      toast.error(error?.data?.message || (isAdding ? "Failed to add" : "Failed to update"));
+      toast.error(error?.data?.message || "Failed");
     }
   };
-
-  const filtered = reviews.filter((review) => {
-    const matchesRating = filterRating === "all" || review.rating === parseInt(filterRating, 10);
-    const reviewText = review.text || review.review_text || "";
-    const matchesSearch =
-      review.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reviewText.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesRating && matchesSearch;
-  });
-
-  const avgRating =
-    reviews.length > 0
-      ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
-      : 0;
 
   const actionOptions = [
     { value: "Edit", label: "Edit" },
@@ -114,92 +100,39 @@ const Reviews = () => {
   ];
 
   const handleAction = (event, row) => {
-    const selectedAction = event.target.value;
+    const action = event.target.value;
     const review = filtered.find((item) => item.id === row.id);
-
     if (!review) return;
-
-    if (selectedAction === "Edit") openEdit(review);
-    else if (selectedAction === "View") openView(review);
-    else if (selectedAction === "Delete") handleDelete(review.id);
-
+    if (action === "Edit") openEdit(review);
+    else if (action === "View") openView(review);
+    else if (action === "Delete") handleDelete(review.id);
     event.target.value = "";
   };
 
   if (isLoading) return <Skeleton variant="table" count={5} />;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Reviews</h1>
-        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-          <SearchBar
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search by name or review..."
-            className="sm:w-72"
-          />
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col gap-3 mb-4 sm:mb-6 sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Reviews</h1>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search reviews..." />
           <Button onClick={openAdd} variant="primary" className="w-full sm:w-auto">
             Add Review
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatsCard label="Total Reviews" value={reviews.length} color="blue" />
-        <StatsCard label="Average Rating" value={avgRating} icon={FaStar} color="blue" />
-        <StatsCard
-          label="5 Star Reviews"
-          value={reviews.filter((review) => review.rating === 5).length}
-          color="green"
-        />
-        <StatsCard
-          label="1 Star Reviews"
-          value={reviews.filter((review) => review.rating === 1).length}
-          color="red"
-        />
-      </div>
-
-      <div className="rounded-lg bg-white p-4 shadow">
-        <select
-          value={filterRating}
-          onChange={(event) => setFilterRating(event.target.value)}
-          className="w-full rounded-lg border px-3 py-2 text-sm sm:w-52"
-        >
-          <option value="all">All Ratings</option>
-          <option value="5">5 Stars</option>
-          <option value="4">4 Stars</option>
-          <option value="3">3 Stars</option>
-          <option value="2">2 Stars</option>
-          <option value="1">1 Star</option>
-        </select>
-      </div>
-
       <Table
-        headers={["#", "Name", "Rating", "Review", "Date", "Action"]}
+        headers={["#", "Name", "Role", "Rating", "Review", "Action"]}
         rows={filtered.map((review, index) => ({
           id: review.id,
           cells: [
-            { content: index + 1, className: "text-slate-600" },
-            { content: review.name, className: "font-medium text-slate-700" },
-            {
-              content: (
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, starIndex) => (
-                    <FaStar
-                      key={starIndex}
-                      className={starIndex < review.rating ? "text-yellow-400" : "text-gray-200"}
-                      size={12}
-                    />
-                  ))}
-                </div>
-              ),
-            },
-            { content: review.text || review.review_text || "-", className: "max-w-xs truncate text-slate-600" },
-            {
-              content: review.created_at ? new Date(review.created_at).toLocaleDateString() : "-",
-              className: "text-slate-600",
-            },
+            { content: index + 1 },
+            { content: review.name || "-", className: "font-medium" },
+            { content: review.role || "-" },
+            { content: `${review.rating || 0} ⭐` },
+            { content: review.text?.substring(0, 50) + "..." || "-" },
           ],
         }))}
         actionOptions={actionOptions}
@@ -217,9 +150,9 @@ const Reviews = () => {
           <div className="space-y-3">
             {[
               ["Name", viewItem?.name],
-              ["Rating", viewItem?.rating ? `${viewItem.rating} Stars` : "-"],
-              ["Review", viewItem?.text || viewItem?.review_text],
-              ["Date", viewItem?.created_at ? new Date(viewItem.created_at).toLocaleDateString() : "-"],
+              ["Role", viewItem?.role],
+              ["Rating", `${viewItem?.rating} ⭐`],
+              ["Review", viewItem?.text],
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-xs font-medium text-gray-500">{label}</p>
@@ -237,38 +170,41 @@ const Reviews = () => {
             <FormInput
               placeholder="Name *"
               value={formData.name}
-              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
-            <FormSelect
-              placeholder="Select Rating"
+            <FormInput
+              placeholder="Role (e.g. Patient)"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            />
+            <FormInput
+              type="number"
+              placeholder="Rating (1-5) *"
               value={formData.rating}
-              onChange={(event) => setFormData({ ...formData, rating: parseInt(event.target.value, 10) })}
-              options={[
-                { value: 5, label: "5 Stars" },
-                { value: 4, label: "4 Stars" },
-                { value: 3, label: "3 Stars" },
-                { value: 2, label: "2 Stars" },
-                { value: 1, label: "1 Star" },
-              ]}
+              onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+              min="1"
+              max="5"
+              required
             />
             <FormTextarea
               placeholder="Review Text *"
               value={formData.text}
-              onChange={(event) => setFormData({ ...formData, text: event.target.value })}
+              onChange={(e) => setFormData({ ...formData, text: e.target.value })}
               rows={4}
               required
             />
             <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                variant="secondary"
-                className="w-full sm:w-auto"
-              >
+              <Button type="button" onClick={() => setIsModalOpen(false)} variant="secondary" className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting}
+                loadingText={isAdding ? "Adding..." : "Updating..."}
+                className="w-full sm:w-auto"
+              >
                 {isAdding ? "Add" : "Update"}
               </Button>
             </div>
@@ -281,7 +217,7 @@ const Reviews = () => {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Review"
-        message="Are you sure you want to delete this review? This action cannot be undone."
+        message="Are you sure you want to delete this review?"
         confirmText="Delete"
         isLoading={isDeleting}
         variant="danger"

@@ -147,8 +147,8 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    setOpen(false);
     dispatch(clearCredentials());
+    // Clear localStorage backup
     localStorage.removeItem("authToken");
     localStorage.removeItem("authUser");
     navigate("/");
@@ -158,10 +158,9 @@ const Sidebar = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed left-3 top-3 z-[110] rounded-xl border border-slate-200 bg-white p-2 text-slate-700 shadow-lg lg:hidden"
-        aria-label="Open admin menu"
+        className="lg:hidden ml-4 mt-4 fixed top-0 left-0 bg-white z-[50] p-1 rounded shadow"
       >
-        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+        <svg className="w-7 h-7" fill="#000" viewBox="0 0 20 20">
           <path
             fillRule="evenodd"
             d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
@@ -170,79 +169,75 @@ const Sidebar = () => {
         </svg>
       </button>
 
-      {open && (
+      <nav className="lg:min-w-[250px] w-max max-lg:min-w-8">
+        {open && (
+          <div
+            className="fixed inset-0 bg-black/30 z-[98] lg:hidden"
+            onClick={() => setOpen(false)}
+          />
+        )}
+
         <div
-          className="fixed inset-0 z-[98] bg-slate-950/40 backdrop-blur-[1px] lg:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      <div className="hidden w-[250px] shrink-0 lg:block" aria-hidden="true" />
-
-      <aside
-        className={`fixed left-0 top-0 z-[99] flex h-screen w-[280px] max-w-[82vw] flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-300 lg:w-[250px] lg:max-w-none lg:shadow-none ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-      >
-        <div className="flex min-h-[72px] items-center gap-3 border-b border-gray-100 bg-white px-4 py-4">
-          <img src={logo} alt="logo" className="h-9 w-9 object-contain" />
-          <div className="min-w-0">
-            <span className="block truncate text-sm font-bold text-slate-800">
+          className={`bg-white shadow-lg h-screen fixed top-0 left-0 flex flex-col z-[99] lg:min-w-[250px] w-[250px] transition-all duration-500 ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        >
+          <div className="flex items-center gap-2 pt-6 pb-2 px-4 sticky top-0 bg-white min-h-[64px] z-[100] border-b border-gray-100">
+            <img src={logo} alt="logo" className="w-8 h-8 object-contain" />
+            <span className="font-bold text-slate-800 text-sm">
               Swastik Hospital
             </span>
-            <span className="text-xs text-slate-500">Admin Panel</span>
-          </div>
-          <button
-            onClick={() => setOpen(false)}
-            className="ml-auto rounded-lg p-1 text-slate-500 transition hover:bg-slate-100 lg:hidden"
-            aria-label="Close admin menu"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <ul className="space-y-1.5">
-            {navItems.map(({ label, to, icon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center rounded-xl px-3 py-3 text-sm font-medium text-slate-800 transition-all duration-300 ${
-                      isActive ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"
-                    }`
-                  }
-                >
-                  {icon}
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                    {label}
-                  </span>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="border-t border-gray-100 px-4 py-4">
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center rounded-xl px-3 py-3 text-sm font-medium text-slate-800 transition-all duration-300 hover:bg-red-50 hover:text-red-500"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              className="mr-3 h-[18px] w-[18px]"
-              viewBox="0 0 6 6"
+            <button
+              onClick={() => setOpen(false)}
+              className="lg:hidden ml-auto"
             >
-              <path d="M3.172.53a.265.266 0 0 0-.262.268v2.127a.265.266 0 0 0 .53 0V.798A.265.266 0 0 0 3.172.53zm1.544.532a.265.266 0 0 0-.026 0 .265.266 0 0 0-.147.47c.459.391.749.973.749 1.626 0 1.18-.944 2.131-2.116 2.131A2.12 2.12 0 0 1 1.06 3.16c0-.65.286-1.228.74-1.62a.265.266 0 1 0-.344-.404A2.667 2.667 0 0 0 .53 3.158a2.66 2.66 0 0 0 2.647 2.663 2.657 2.657 0 0 0 2.645-2.663c0-.812-.363-1.542-.936-2.03a.265.266 0 0 0-.17-.066z" />
-            </svg>
-            <span>Logout</span>
-          </button>
+              <svg className="w-6 h-6" fill="#000" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="py-4 px-4 flex-1 overflow-auto">
+            <ul className="space-y-1">
+              {navItems.map(({ label, to, icon }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                      `text-slate-800 text-[15px] font-medium flex items-center cursor-pointer rounded-md px-3 py-2.5 transition-all duration-300 ${isActive ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"}`
+                    }
+                  >
+                    {icon}
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                      {label}
+                    </span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="px-4 py-4 border-t border-gray-100">
+            <button
+              onClick={handleLogout}
+              className="w-full text-slate-800 text-[15px] font-medium flex items-center cursor-pointer hover:bg-red-50 hover:text-red-500 rounded-md px-3 py-2.5 transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                className="w-[18px] h-[18px] mr-3"
+                viewBox="0 0 6 6"
+              >
+                <path d="M3.172.53a.265.266 0 0 0-.262.268v2.127a.265.266 0 0 0 .53 0V.798A.265.266 0 0 0 3.172.53zm1.544.532a.265.266 0 0 0-.026 0 .265.266 0 0 0-.147.47c.459.391.749.973.749 1.626 0 1.18-.944 2.131-2.116 2.131A2.12 2.12 0 0 1 1.06 3.16c0-.65.286-1.228.74-1.62a.265.266 0 1 0-.344-.404A2.667 2.667 0 0 0 .53 3.158a2.66 2.66 0 0 0 2.647 2.663 2.657 2.657 0 0 0 2.645-2.663c0-.812-.363-1.542-.936-2.03a.265.266 0 0 0-.17-.066z" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
-      </aside>
+      </nav>
     </>
   );
 };

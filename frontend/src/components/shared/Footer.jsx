@@ -166,7 +166,7 @@ const Footer = () => {
 
       <hr className="my-6 border-gray-600" />
 
-      <div className="flex justify-between max-w-screen-xl mx-auto text-start">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 max-w-screen-xl mx-auto text-center sm:text-start">
         <p className="text-gray-400 text-[13px]">
           Copyright © 2026 Swastik Hospital. All Rights Reserved.
         </p>
